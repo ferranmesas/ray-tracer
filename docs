@@ -1,0 +1,5 @@
+input format:
+camera position: 3 floats
+camera direction: 3 floats. Includes horizontal field of view (inversely proportional to vector length)
+number of spheres: 1 long
+sphere N: 4 floats (3 for position, 1 for radius)
