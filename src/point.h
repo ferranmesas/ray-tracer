@@ -6,7 +6,6 @@ typedef struct {
   float x, y, z;
 } point;
 
-void print_point(point *p) {
-  printf("(%f, %f, %f)\n", p->x, p->y, p->z);
-}
+void print_point(point *p);
+
 #endif // POINT_H
