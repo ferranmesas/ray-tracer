@@ -5,8 +5,12 @@
 #define POINT_STRUCT struct { float x, y, z; }
 typedef POINT_STRUCT point;
 
-float distance(point *p, point *q);
+extern const point POINT_ZERO;
 
-void print_point(point *p);
+float distance(const point *p, const point *q);
+
+void normalize(point *p);
+
+void print_point(const point *p);
 
 #endif // POINT_H

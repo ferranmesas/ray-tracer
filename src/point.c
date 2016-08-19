@@ -1,7 +1,9 @@
 #include "point.h"
 #include "math.h"
 
-float distance(point *p, point *q) {
+const point POINT_ZERO = {0.0f, 0.0f, 0.0f};
+
+float distance(const point *p, const point *q) {
     return sqrt(
       (p->x - q->x) * (p->x - q->x) +
       (p->y - q->y) * (p->y - q->y) +
@@ -9,6 +11,13 @@ float distance(point *p, point *q) {
     );
 }
 
-void print_point (point *p){
+void normalize(point *p) {
+  float length = distance(p, &POINT_ZERO);
+  p->x /= length;
+  p->y /= length;
+  p->z /= length;
+}
+
+void print_point (const point *p){
  fprintf(stderr, "(%f, %f, %f)\n", p->x, p->y, p->z);
 }
