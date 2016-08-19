@@ -12,4 +12,4 @@ $(SRC)/%.o: $(SRC)/%.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm src/*.o
+	rm raytracer src/*.o
