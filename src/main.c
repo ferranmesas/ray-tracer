@@ -4,6 +4,7 @@
 #include "image.h"
 #include "sphere.h"
 #include "point.h"
+#include "ray.h"
 
 int main(int argc, char* argv[]) {
   long height, width;
