@@ -8,7 +8,7 @@ LDFLAGS =
 raytracer: $(SRC)/main.o $(SRC)/image.o $(SRC)/sphere.o $(SRC)/point.o
 	$(CC) $(LDFLAGS) $^ -o $@
 
-$(SRC)/%.o: $(SRC)/%.c
+$(SRC)/%.o: $(SRC)/%.c $(SRC)/%.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
