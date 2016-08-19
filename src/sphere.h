@@ -4,10 +4,15 @@
 #include "point.h"
 
 typedef struct {
-  float x, y, z;
+  union {
+    point center;
+    struct {
+      float x, y, z;
+    };
+  };
   float r;
 } sphere;
 
-float distance(sphere *s, point *p);
+float sphere_distance(sphere *s, point *p);
 
 #endif // SPHERE_H
