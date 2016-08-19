@@ -19,10 +19,12 @@ int main(int argc, char* argv[]) {
   image *im = (image*) malloc(sizeof(image));
   init_image(im, width, height);
   point *camera = (point*) malloc(sizeof(point));
-  point *direction = (point*) malloc(sizeof(point));
+  point *dir = (point*) malloc(sizeof(point));
+  point * light = malloc(sizeof(point));
 
   scanf("%f %f %f\n", &(camera->x), &(camera->y), &(camera->z));
-  scanf("%f %f %f\n", &(direction->x), &(direction->y), &(direction->z));
+  scanf("%f %f %f\n", &(dir->x), &(dir->y), &(dir->z));
+  scanf("%f %f %f\n", &(light->x), &(light->y), &(light->z));
 
   int n_spheres;
   scanf("%d\n", &n_spheres);
