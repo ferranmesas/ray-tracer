@@ -1,4 +1,3 @@
-#include "math.h"
 #include "sphere.h"
 #include "point.h"
 
