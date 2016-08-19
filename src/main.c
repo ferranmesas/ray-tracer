@@ -34,15 +34,22 @@ int main(int argc, char* argv[]) {
     sphere *s = (spheres + i);
     scanf("%f %f %f %f\n", &(s->x), &(s->y), &(s->z), &(s->r));
   }
-  print_point(camera);
-  print_point(direction);
 
   for(int i = 0; i < im->height; i++) {
     float u = 2.0f * i / (height-1) - 1;
     for(int j = 0; j < im->width; j++) {
       float v = 2.0f * j / (width - 1) - 1;
-
-      im->data[i * im->width + j] = j % 256;
+      point p;
+      p.x = u;
+      p.y = 2;
+      p.z = v;
+      for (int k = 0; k < n_spheres; k++) {
+        float dist = distance(&p, &spheres[k].center);
+        char color = dist / spheres[k].r * 255;
+        if (distance(&p, &spheres[k].center) < spheres[k].r) {
+          im->data[i * im->width + j] = color;
+        }
+      }
     }
   }
 
