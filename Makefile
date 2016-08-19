@@ -1,6 +1,6 @@
 SRC = src
 
-CFLAGS = -Wall -Wextra -Werror -pedantic -std=c11 -Wno-unused-variable
+CFLAGS = -Wall -Wextra -Werror -pedantic -std=c11 -Wno-unused-variable -Wno-unused-parameter
 LDFLAGS =
 
 .PHONY: clean
