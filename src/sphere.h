@@ -6,13 +6,10 @@
 typedef struct {
   union {
     point center;
-    struct {
-      float x, y, z;
-    };
+    POINT_STRUCT;
   };
   float r;
 } sphere;
 
 float sphere_distance(sphere *s, point *p);
-
 #endif // SPHERE_H

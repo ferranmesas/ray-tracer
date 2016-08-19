@@ -2,9 +2,8 @@
 #define POINT_H
 #include <stdio.h>
 
-typedef struct {
-  float x, y, z;
-} point;
+#define POINT_STRUCT struct { float x, y, z; }
+typedef POINT_STRUCT point;
 
 float distance(point *p, point *q);
 
