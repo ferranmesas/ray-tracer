@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "image.h"
 #include "sphere.h"
@@ -9,10 +10,12 @@
 
 #define EPS 1.0E-3
 #define MAX_ITER 100
+#define N_RAYS 64
 
 int intersects(ray r, sphere *spheres, int n_spheres, ray *normal);
 
 int main(int argc, char* argv[]) {
+  srand(time(NULL));
   long height, width, min_dim;
   if(argc == 3) {
     width = strtol(argv[1], NULL, 10);
@@ -50,24 +53,32 @@ int main(int argc, char* argv[]) {
       // the aspect ratio.
       float u = 2.0f * i / (min_dim - 1) - (1.0f * height / min_dim);
       float v = 2.0f * j / (min_dim - 1) - (1.0f * width / min_dim);
+      float pixel_eps = 2.0f / (min_dim - 1);
 
-      // TODO: Calculate proper ray source and direction for each pixel!
-      // need to adjust for perspective
-      ray current_ray = {
-        .source = camera,
-        .dir = {u, 10, v}
-      };
-      normalize(&current_ray.dir);
+      float total_light = 0;
+      for (int k = 0; k < N_RAYS; k ++) {
+        // TODO: Calculate proper ray source and direction for each pixel!
+        // need to adjust for perspective
+        ray current_ray = {
+          .source = camera,
+          .dir = {
+            u + pixel_eps * ((float) rand() / RAND_MAX - 0.5),
+            10,
+            v + pixel_eps * ((float) rand() / RAND_MAX - 0.5)
+          }
+        };
+        normalize(&current_ray.dir);
 
-      ray normal;
+        ray normal;
 
-      if (intersects(current_ray, spheres, n_spheres, &normal)) {
-        ray light;
-        ray_from_to(&light, light_source, normal.source);
+        if (intersects(current_ray, spheres, n_spheres, &normal)) {
+          ray light;
+          ray_from_to(&light, light_source, normal.source);
 
-        float light_incidence = dot_product(normal.dir, light.dir);
-        light_incidence = light_incidence > 0? light_incidence : 0;
-        im->data[i * im->width + j] = 32 + 224 * light_incidence;
+          float light_incidence = dot_product(normal.dir, light.dir);
+          total_light += light_incidence > 0? light_incidence : 0;
+        }
+        im->data[i * im->width + j] = 32 + 224 * (total_light / N_RAYS);
       }
     }
   }
