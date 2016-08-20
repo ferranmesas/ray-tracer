@@ -1,11 +1,12 @@
 #ifndef RAY_H
 #define RAY_H
 
+#include "point.h"
+
 typedef struct {
   point source;
-  point direction;
+  point dir;
 } ray;
 
-int intersect_sphere(ray *r, sphere *s, ray *normal);
-
+void ray_advance(ray *r, float dist);
 #endif // RAY_H
