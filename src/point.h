@@ -7,7 +7,7 @@ typedef POINT_STRUCT point;
 
 extern const point POINT_ZERO;
 
-float distance(const point *p, const point *q);
+float distance(const point p, const point q);
 
 void normalize(point *p);
 
