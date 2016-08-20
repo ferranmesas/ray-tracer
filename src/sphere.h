@@ -11,5 +11,5 @@ typedef struct {
   float r;
 } sphere;
 
-float sphere_distance(const sphere *s, const point *p);
+float sphere_distance(const sphere s, const point p);
 #endif // SPHERE_H
