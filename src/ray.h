@@ -9,4 +9,7 @@ typedef struct {
 } ray;
 
 void ray_advance(ray *r, float dist);
+
+void ray_from_to(ray * r, const point from, const point to);
+
 #endif // RAY_H
