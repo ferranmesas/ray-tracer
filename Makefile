@@ -9,7 +9,7 @@ raytracer: $(SRC)/main.o $(SRC)/image.o $(SRC)/sphere.o $(SRC)/point.o $(SRC)/ra
 	$(CC) $(LDFLAGS) $^ -o $@
 
 $(SRC)/%.o: $(SRC)/%.c $(SRC)/%.h
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm raytracer src/*.o
