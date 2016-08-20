@@ -8,6 +8,12 @@ void ray_advance(ray *r, float dist) {
   r->source.z += r->dir.z * dist;
 }
 
+void ray_reverse(ray *r) {
+  r->dir.x = -r->dir.x;
+  r->dir.y = -r->dir.y;
+  r->dir.z = -r->dir.z;
+}
+
 void ray_from_to(ray * r, const point from, const point to) {
   r->source = from;
   r->dir.x = to.x - from.x;
