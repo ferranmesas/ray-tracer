@@ -18,6 +18,10 @@ void normalize(point *p) {
   p->z /= length;
 }
 
+float dot_product(const point p, const point q) {
+    return p.x * q.x + p.y * q.y + p.z * q.z;
+}
+
 void print_point (const point *p){
  fprintf(stderr, "(%f, %f, %f)\n", p->x, p->y, p->z);
 }
