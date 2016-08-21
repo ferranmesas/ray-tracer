@@ -7,8 +7,10 @@ typedef struct{
   char *data;
 } image;
 
-void init_image(image *im, long width, long height);
+void init_image(image *im, int width, int height);
 void destroy_image(image *im);
 void print_image(image *im);
+
+void image_set_pixel(image *im, int i, int j, char value);
 
 #endif // IMAGE_H
