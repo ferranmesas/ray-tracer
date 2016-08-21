@@ -17,7 +17,7 @@ int intersects(ray r, sphere *spheres, int n_spheres, ray *normal);
 
 int main(int argc, char* argv[]) {
   srand(time(NULL));
-  long height, width, min_dim;
+  int height, width, min_dim;
   if(argc == 3) {
     width = strtol(argv[1], NULL, 10);
     height = strtol(argv[2], NULL, 10);
@@ -42,8 +42,11 @@ int main(int argc, char* argv[]) {
 
   sphere *spheres = (sphere*) malloc(n_spheres * sizeof(sphere));
   for (int i = 0; i < n_spheres; i++) {
-    sphere *s = (spheres + i);
-    scanf("%f %f %f %f\n", &(s->x), &(s->y), &(s->z), &(s->r));
+    point center;
+    float radius;
+    scanf("%f %f %f %f\n", &center.x, &center.y, &center.z, &radius);
+    spheres[i].center = center;
+    spheres[i].r = radius;
   }
 
   // Done reading input, start tracing!
@@ -70,17 +73,15 @@ int main(int argc, char* argv[]) {
         };
         normalize(&current_ray.dir);
 
-        ray normal;
-
+        ray normal, light;
         if (intersects(current_ray, spheres, n_spheres, &normal)) {
-          ray light;
           ray_from_to(&light, light_source, normal.source);
 
           float light_incidence = dot_product(normal.dir, light.dir);
           total_light += light_incidence > 0? light_incidence : 0;
         }
-        im->data[i * im->width + j] = 32 + 224 * (total_light / N_RAYS);
       }
+      image_set_pixel(im, i, j, 32 + 224 * (total_light / N_RAYS));
     }
   }
 
