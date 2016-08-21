@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 
           float diffuse_light = max(0, dot_product(normal.dir, light.dir));
           float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
-          total_light += 0.1 + 0.5 * diffuse_light + 0.4 * pow(specular_light, 30);
+          total_light += 0.1 + 0.6 * diffuse_light + 0.3 * pow(specular_light, 10);
         }
       }
       putchar(255 * total_light / N_RAYS);
