@@ -4,10 +4,7 @@
 #include "point.h"
 
 typedef struct {
-  union {
-    point center;
-    POINT_STRUCT;
-  };
+  point center;
   float r;
 } sphere;
 

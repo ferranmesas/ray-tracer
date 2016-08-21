@@ -2,8 +2,7 @@
 #define POINT_H
 #include <stdio.h>
 
-#define POINT_STRUCT struct { float x, y, z; }
-typedef POINT_STRUCT point;
+typedef struct { float x, y, z; } point;
 
 extern const point POINT_ZERO;
 
