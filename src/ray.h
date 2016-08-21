@@ -14,5 +14,7 @@ void ray_advance(ray *r, float dist);
 
 void ray_reverse(ray *r);
 
+void ray_reflect(const ray r, const ray normal, ray *reflection);
+
 
 #endif // RAY_H
