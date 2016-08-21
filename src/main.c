@@ -10,9 +10,17 @@
 #define EPS 1.0E-3
 #define MAX_ITER 100
 #define MAX_DIST 100
-#define N_RAYS 32
+#define N_RAYS 16
 
 int intersects(ray r, sphere *spheres, int n_spheres, ray *normal);
+
+float max(float a, float b) {
+  return a > b ? a : b;
+}
+
+float min(float a, float b) {
+  return a < b ? a : b;
+}
 
 int main(int argc, char* argv[]) {
   srand(time(NULL));
@@ -71,15 +79,20 @@ int main(int argc, char* argv[]) {
         };
         normalize(&current_ray.dir);
 
-        ray normal, light;
+        ray normal, light, reflection, light_reflection;
         if (intersects(current_ray, spheres, n_spheres, &normal)) {
           ray_from_to(&light, light_source, normal.source);
 
-          float light_incidence = dot_product(normal.dir, light.dir);
-          total_light += light_incidence > 0? light_incidence : 0;
+          ray_reflect(current_ray, normal, &reflection);
+          ray_reflect(light, normal, &light_reflection);
+
+
+          float diffuse_light = max(0, dot_product(normal.dir, light.dir));
+          float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
+          total_light += 0.1 + 0.5 * diffuse_light + 0.4 * pow(specular_light, 30);
         }
       }
-      putchar(32 + 224 * (total_light / N_RAYS));
+      putchar(255 * total_light / N_RAYS);
     }
   }
 }
