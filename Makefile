@@ -1,6 +1,6 @@
 SRC = src
 
-CFLAGS = -Wall -Wextra -Werror -pedantic -std=c11 -Wno-unused-parameter
+CFLAGS = -Wall -Wextra -Werror -pedantic -std=c11
 OPTFLAGS = -O2 -march=native -ffast-math -fomit-frame-pointer -g
 LDFLAGS =
 
