@@ -10,7 +10,8 @@
 
 #define EPS 1.0E-3
 #define MAX_ITER 100
-#define N_RAYS 64
+#define MAX_DIST 100
+#define N_RAYS 32
 
 int intersects(ray r, sphere *spheres, int n_spheres, ray *normal);
 
@@ -88,8 +89,9 @@ int main(int argc, char* argv[]) {
 }
 
 int intersects(ray r, sphere *spheres, int n_spheres, ray *normal) {
+  point ray_source = r.source;
   for (int i = 0; i < MAX_ITER; i++){
-    // find closest sphere and distance to it.
+    // find closest sphere and the normal
     float min_dist = INFINITY;
     for (int k = 0; k < n_spheres; k++) {
       float dist = sphere_distance(spheres[k], r.source);
@@ -105,6 +107,10 @@ int intersects(ray r, sphere *spheres, int n_spheres, ray *normal) {
     // we got real close to an object (there was an intersection)
     if (min_dist < EPS) {
       return 1;
+    }
+    // We went too far away of the original ray
+    if (distance(ray_source, r.source) > MAX_DIST) {
+      return 0;
     }
   }
   return 0;
