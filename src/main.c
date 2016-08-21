@@ -13,7 +13,7 @@
 #define MAX_DIST 100.0f
 #define N_RAYS 32
 
-int intersects(ray r, const scene s, ray *normal);
+int intersects(ray r, const scene s, point *intersection);
 
 float max(float a, float b) {
   return a > b ? a : b;
@@ -70,9 +70,11 @@ int main(int argc, char* argv[]) {
           }
         };
         normalize(&current_ray.dir);
-
+        
+        point intersection;
         ray normal, light, reflection, light_reflection;
-        if (intersects(current_ray, s, &normal)) {
+        if (intersects(current_ray, s, &intersection)) {
+          scene_get_normal(s, intersection, &normal);
           float fog_amount = distance(camera, normal.source) / MAX_DIST;
           ray_from_to(&light, light_source, normal.source);
 
@@ -90,23 +92,21 @@ int main(int argc, char* argv[]) {
   }
 }
 
-int intersects(ray r, const scene s, ray *normal) {
+int intersects(ray r, const scene s, point *intersection) {
   point ray_source = r.source;
   for (int i = 0; i < MAX_ITER; i++){
     // find closest sphere and the normal
     float min_dist = scene_distance(s, r.source);
-    // advance the minimum distance.
-    ray_advance(&r, min_dist);
-
     // we got real close to an object (there was an intersection)
     if (min_dist < EPS) {
-      scene_get_normal(s, r.source, normal);
+      *intersection = r.source;
       return 1;
     }
     // We went too far away of the original ray
     if (distance(ray_source, r.source) > MAX_DIST) {
       return 0;
     }
+    ray_advance(&r, min_dist);
   }
   return 0;
 }
