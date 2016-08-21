@@ -6,7 +6,7 @@ LDFLAGS =
 
 .PHONY: clean
 
-raytracer: $(SRC)/main.o $(SRC)/image.o $(SRC)/sphere.o $(SRC)/point.o $(SRC)/ray.o
+raytracer: $(SRC)/main.o $(SRC)/sphere.o $(SRC)/point.o $(SRC)/ray.o
 	$(CC) $(LDFLAGS) $^ -o $@
 
 $(SRC)/%.o: $(SRC)/%.c $(SRC)/%.h

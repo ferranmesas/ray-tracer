@@ -3,7 +3,6 @@
 #include <math.h>
 #include <time.h>
 
-#include "image.h"
 #include "sphere.h"
 #include "point.h"
 #include "ray.h"
@@ -29,9 +28,6 @@ int main(int argc, char* argv[]) {
 
   min_dim = height < width ? height : width;
 
-  image *im = (image*) malloc(sizeof(image));
-  init_image(im, width, height);
-
   point camera, dir, light_source;
   scanf("%f %f %f\n", &(camera.x), &(camera.y), &(camera.z));
   scanf("%f %f %f\n", &(dir.x), &(dir.y), &(dir.z));
@@ -51,8 +47,10 @@ int main(int argc, char* argv[]) {
 
   // Done reading input, start tracing!
 
-  for (int i = 0; i < im->height; i++) {
-    for (int j = 0; j < im->width; j++) {
+  // netpbm header
+  printf("P5\n%d %d\n255\n", width, height);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
       // both u and v are scaled by the same value (min_dim) in order to preserve
       // the aspect ratio.
       float u = 2.0f * i / (min_dim - 1) - (1.0f * height / min_dim);
@@ -81,12 +79,9 @@ int main(int argc, char* argv[]) {
           total_light += light_incidence > 0? light_incidence : 0;
         }
       }
-      image_set_pixel(im, i, j, 32 + 224 * (total_light / N_RAYS));
+      putchar(32 + 224 * (total_light / N_RAYS));
     }
   }
-
-  print_image(im);
-  destroy_image(im);
 }
 
 int intersects(ray r, sphere *spheres, int n_spheres, ray *normal) {
