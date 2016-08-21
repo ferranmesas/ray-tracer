@@ -6,13 +6,14 @@
 #include "sphere.h"
 #include "point.h"
 #include "ray.h"
+#include "scene.h"
 
 #define EPS 1.0E-3
 #define MAX_ITER 100
-#define MAX_DIST 100
-#define N_RAYS 16
+#define MAX_DIST 100.0f
+#define N_RAYS 32
 
-int intersects(ray r, sphere *spheres, int n_spheres, ray *normal);
+int intersects(ray r, const scene s, ray *normal);
 
 float max(float a, float b) {
   return a > b ? a : b;
@@ -41,18 +42,9 @@ int main(int argc, char* argv[]) {
   scanf("%f %f %f\n", &(dir.x), &(dir.y), &(dir.z));
   scanf("%f %f %f\n", &(light_source.x), &(light_source.y), &(light_source.z));
 
-  int n_spheres;
-  scanf("%d\n", &n_spheres);
+  scene s;
 
-  sphere *spheres = (sphere*) malloc(n_spheres * sizeof(sphere));
-  for (int i = 0; i < n_spheres; i++) {
-    point center;
-    float radius;
-    scanf("%f %f %f %f\n", &center.x, &center.y, &center.z, &radius);
-    spheres[i].center = center;
-    spheres[i].r = radius;
-  }
-
+  read_scene(&s, stdin);
   // Done reading input, start tracing!
 
   // netpbm header
@@ -80,16 +72,17 @@ int main(int argc, char* argv[]) {
         normalize(&current_ray.dir);
 
         ray normal, light, reflection, light_reflection;
-        if (intersects(current_ray, spheres, n_spheres, &normal)) {
+        if (intersects(current_ray, s, &normal)) {
+          float fog_amount = distance(camera, normal.source) / MAX_DIST;
           ray_from_to(&light, light_source, normal.source);
 
           ray_reflect(current_ray, normal, &reflection);
           ray_reflect(light, normal, &light_reflection);
 
-
           float diffuse_light = max(0, dot_product(normal.dir, light.dir));
           float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
-          total_light += 0.1 + 0.6 * diffuse_light + 0.3 * pow(specular_light, 10);
+          float light = 0.1 + 0.6 * diffuse_light + 0.3 * pow(specular_light, 10);
+          total_light += fog_amount * 0.7 + (1 - fog_amount) * light;
         }
       }
       putchar(255 * total_light / N_RAYS);
@@ -97,24 +90,17 @@ int main(int argc, char* argv[]) {
   }
 }
 
-int intersects(ray r, sphere *spheres, int n_spheres, ray *normal) {
+int intersects(ray r, const scene s, ray *normal) {
   point ray_source = r.source;
   for (int i = 0; i < MAX_ITER; i++){
     // find closest sphere and the normal
-    float min_dist = INFINITY;
-    for (int k = 0; k < n_spheres; k++) {
-      float dist = sphere_distance(spheres[k], r.source);
-      if (dist < min_dist) {
-        min_dist = dist;
-        ray_from_to(normal, spheres[k].center, r.source);
-        ray_reverse(normal);
-      }
-    }
+    float min_dist = scene_distance(s, r.source);
     // advance the minimum distance.
     ray_advance(&r, min_dist);
 
     // we got real close to an object (there was an intersection)
     if (min_dist < EPS) {
+      scene_get_normal(s, r.source, normal);
       return 1;
     }
     // We went too far away of the original ray
