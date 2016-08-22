@@ -10,10 +10,10 @@
 
 #define EPS 1.0E-3
 #define MAX_ITER 2048
-#define MAX_DIST 100.0f
+#define MAX_DIST 80.0f
 #define N_RAYS 16
 
-int intersects(ray r, const scene s, point *intersection);
+int intersect(ray r, const scene s, point *intersection);
 
 float max(float a, float b) {
   return a > b ? a : b;
@@ -66,9 +66,9 @@ int main(int argc, char* argv[]) {
         #if N_RAYS > 1
         float pixel_eps = 2.0f / (min_dim - 1);
         point pixel = {
-          u + pixel_eps * ((float) rand() / RAND_MAX - 0.5),
+          u + pixel_eps * (1.0f * rand() / RAND_MAX - 0.5),
           length(dir),
-          v + pixel_eps * ((float) rand() / RAND_MAX - 0.5)
+          v + pixel_eps * (1.0f * rand() / RAND_MAX - 0.5)
         };
         #else
         point pixel = {
@@ -82,37 +82,46 @@ int main(int argc, char* argv[]) {
         ray_reverse(&current_ray);
 
         point intersection, light_intersection;
-        ray normal, light;
+        ray normal, incident_light;
         ray reflection, light_reflection;
-        if (intersects(current_ray, s, &intersection)) {
+        if (intersect(current_ray, s, &intersection)) {
           scene_get_normal(s, intersection, &normal);
-          ray_from_to(&light, light_source, normal.source);
+          ray_from_to(&incident_light, light_source, normal.source);
 
           ray_reflect(current_ray, normal, &reflection);
-          ray_reflect(light, normal, &light_reflection);
+          ray_reflect(incident_light, normal, &light_reflection);
 
-          float diffuse_light = dot_product(normal.dir, light.dir);
+          // We calculate diffuse light first because it tells us if the light
+          // is visible from the point. If it is, we'll need to calculate shadows,
+          // specular lights, etc.
+          float diffuse_light = max(0, dot_product(normal.dir, incident_light.dir));
 
-          int is_shadow = intersects(light, s, &light_intersection);
-          is_shadow = is_shadow && distance(light_intersection, intersection) > EPS;
-          float light = 0.1;
-          float fog_amount = distance(camera, normal.source) / MAX_DIST;
+          intersect(incident_light, s, &light_intersection);
+          int is_shadow = distance(light_intersection, intersection) > EPS;
 
-          if (diffuse_light > 0 && ! is_shadow) {
-            float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
-            light += 0.6 * diffuse_light + 0.6 * pow(specular_light, 20);
+          float ambient_light = 0.1;
+          float specular_light = 0;
+
+          float ray_light;
+          if(diffuse_light > 0 && !is_shadow) {
+            specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 20);
+            ray_light = ambient_light + 0.6 * diffuse_light + 0.4 * specular_light;
+          } else {
+            ray_light = ambient_light;
           }
-          total_light += fog_amount * 0.8 + (1 - fog_amount) * light;
+
+          float fog_amount = distance(camera, intersection) / MAX_DIST;
+          total_light += fog_amount * 0.8 + (1 - fog_amount) * ray_light;
         }
       }
-      putchar((char) clip(0, 255,  150 * total_light / N_RAYS));
+      putchar((char) clip(0, 255,  255 * total_light / N_RAYS));
       putchar((char) clip(0, 255, 255 * total_light / N_RAYS));
       putchar((char) clip(0, 255, 255 * total_light / N_RAYS));
     }
   }
 }
 
-int intersects(ray r, const scene s, point *intersection) {
+int intersect(ray r, const scene s, point *intersection) {
   point ray_source = r.source;
   for (int i = 0; i < MAX_ITER; i++){
     // find closest sphere and the normal
