@@ -9,7 +9,7 @@
 #include "scene.h"
 
 #define EPS 1.0E-3
-#define MAX_ITER 1024
+#define MAX_ITER 512
 #define MAX_DIST 100.0f
 #define N_RAYS 4
 
