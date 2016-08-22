@@ -9,7 +9,7 @@
 #include "scene.h"
 
 #define EPS 1.0E-3
-#define MAX_ITER 512
+#define MAX_ITER 2048
 #define MAX_DIST 100.0f
 #define N_RAYS 4
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   // Done reading input, start tracing!
 
   // netpbm header
-  printf("P5\n%d %d\n255\n", width, height);
+  printf("P6\n%d %d\n255\n", width, height);
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       // both u and v are scaled by the same value (min_dim) in order to preserve
@@ -87,6 +87,8 @@ int main(int argc, char* argv[]) {
           total_light += fog_amount * 0.8 + (1 - fog_amount) * light;
         }
       }
+      putchar(50 * total_light / N_RAYS);
+      putchar(255 * total_light / N_RAYS);
       putchar(255 * total_light / N_RAYS);
     }
   }
