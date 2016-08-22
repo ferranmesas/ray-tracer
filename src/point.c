@@ -11,11 +11,15 @@ float distance(const point p, const point q) {
     );
 }
 
+float length(const point p) {
+  return distance(p, POINT_ZERO);
+}
+
 void normalize(point *p) {
-  float length = distance(*p, POINT_ZERO);
-  p->x /= length;
-  p->y /= length;
-  p->z /= length;
+  float len = length(*p);
+  p->x /= len;
+  p->y /= len;
+  p->z /= len;
 }
 
 float dot_product(const point p, const point q) {

@@ -1,3 +1,4 @@
+
 #include "plane.h"
 #include "point.h"
 
@@ -11,5 +12,5 @@ float plane_distance(const plane pl, const point p) {
     .y = pl.b,
     .z = pl.c
   };
-  return (pl.a * p.x + pl.b * p.y + pl.c *p.z + pl.d) / distance(plane_point, POINT_ZERO);
+  return (pl.a * p.x + pl.b * p.y + pl.c *p.z + pl.d) / length(plane_point);
 }

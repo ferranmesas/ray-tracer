@@ -8,6 +8,8 @@ extern const point POINT_ZERO;
 
 float distance(const point p, const point q);
 
+float length(const point p);
+
 void normalize(point *p);
 
 float dot_product(const point p, const point q);
