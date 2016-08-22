@@ -23,6 +23,9 @@ float min(float a, float b) {
   return a < b ? a : b;
 }
 
+float clip(float lower, float upper, float value) {
+  return max(lower, min(upper, value));
+}
 int main(int argc, char* argv[]) {
   srand(time(NULL));
   int height, width, min_dim;
@@ -83,31 +86,28 @@ int main(int argc, char* argv[]) {
         ray reflection, light_reflection;
         if (intersects(current_ray, s, &intersection)) {
           scene_get_normal(s, intersection, &normal);
-          float fog_amount = distance(camera, normal.source) / MAX_DIST;
           ray_from_to(&light, light_source, normal.source);
 
           ray_reflect(current_ray, normal, &reflection);
           ray_reflect(light, normal, &light_reflection);
 
-
-
-
           float diffuse_light = dot_product(normal.dir, light.dir);
 
-          if (diffuse_light > 0) {
-            intersects(light, s, &light_intersection);
-            if(distance(light_intersection, intersection) < EPS * 40) {
+          int is_shadow = intersects(light, s, &light_intersection);
+          is_shadow = is_shadow && distance(light_intersection, intersection) > EPS;
+          float light = 0.1;
+          float fog_amount = distance(camera, normal.source) / MAX_DIST;
 
-              float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
-              float light = 0.1 + 0.6 * diffuse_light + 0.3 * pow(specular_light, 10);
-              total_light += fog_amount * 0.8 + (1 - fog_amount) * light;
-            }
+          if (diffuse_light > 0 && ! is_shadow) {
+            float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
+            light += 0.6 * diffuse_light + 0.6 * pow(specular_light, 20);
           }
+          total_light += fog_amount * 0.8 + (1 - fog_amount) * light;
         }
       }
-      putchar(50 * total_light / N_RAYS);
-      putchar(255 * total_light / N_RAYS);
-      putchar(255 * total_light / N_RAYS);
+      putchar((char) clip(0, 255,  150 * total_light / N_RAYS));
+      putchar((char) clip(0, 255, 255 * total_light / N_RAYS));
+      putchar((char) clip(0, 255, 255 * total_light / N_RAYS));
     }
   }
 }
@@ -117,10 +117,27 @@ int intersects(ray r, const scene s, point *intersection) {
   for (int i = 0; i < MAX_ITER; i++){
     // find closest sphere and the normal
     float min_dist = scene_distance(s, r.source);
-    // we got real close to an object (there was an intersection)
-    if (min_dist < EPS) {
+
+    // we got real close to an object. advance slowly until we get inside.
+    //fprintf(stderr, "%d, %f\n", i, min_dist);
+    if (min_dist < 0) {
+      // We are inside an object! let's find a point outside and linearly interpolate
+      // to find the exct border of the object.
+      point inside = r.source;
+      double dist_inside = scene_distance(s, inside);
+      while(scene_distance(s, r.source) <= 0) {
+        ray_advance(&r, -EPS);
+      }
+      point outside = r.source;
+      double dist_outside = scene_distance(s, outside);
+
+      double interp = dist_outside / (dist_outside - dist_inside);
+      ray_advance(&r, interp * distance(inside, outside));
       *intersection = r.source;
       return 1;
+    }
+    if (min_dist < EPS) {
+      min_dist = EPS;
     }
     // We went too far away of the original ray
     if (distance(ray_source, r.source) > MAX_DIST) {
