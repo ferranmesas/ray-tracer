@@ -55,21 +55,28 @@ int main(int argc, char* argv[]) {
       // the aspect ratio.
       float u = 2.0f * i / (min_dim - 1) - (1.0f * height / min_dim);
       float v = 2.0f * j / (min_dim - 1) - (1.0f * width / min_dim);
-      float pixel_eps = 2.0f / (min_dim - 1);
 
       float total_light = 0;
       for (int k = 0; k < N_RAYS; k ++) {
         // TODO: Calculate proper ray source and direction for each pixel!
         // need to adjust for perspective
-        ray current_ray = {
-          .source = camera,
-          .dir = {
-            u + pixel_eps * ((float) rand() / RAND_MAX - 0.5),
-            10,
-            v + pixel_eps * ((float) rand() / RAND_MAX - 0.5)
-          }
+        #if N_RAYS > 1
+        float pixel_eps = 2.0f / (min_dim - 1);
+        point pixel = {
+          u + pixel_eps * ((float) rand() / RAND_MAX - 0.5),
+          length(dir),
+          v + pixel_eps * ((float) rand() / RAND_MAX - 0.5)
         };
-        normalize(&current_ray.dir);
+        #else
+        point pixel = {
+          u,
+          length(dir),
+          v
+        };
+        #endif
+        ray current_ray;
+        ray_from_to(&current_ray, pixel, camera);
+        ray_reverse(&current_ray);
 
         point intersection, light_intersection;
         ray normal, light;
