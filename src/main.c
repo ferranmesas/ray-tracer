@@ -11,7 +11,7 @@
 #define EPS 1.0E-3
 #define MAX_ITER 1024
 #define MAX_DIST 100.0f
-#define N_RAYS 16
+#define N_RAYS 4
 
 int intersects(ray r, const scene s, point *intersection);
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
           float diffuse_light = max(0, dot_product(normal.dir, light.dir));
           float specular_light = max(0, -dot_product(light_reflection.dir, current_ray.dir));
           float light = 0.1 + 0.6 * diffuse_light + 0.3 * pow(specular_light, 10);
-          total_light += fog_amount * 0.7 + (1 - fog_amount) * light;
+          total_light += fog_amount * 0.8 + (1 - fog_amount) * light;
         }
       }
       putchar(255 * total_light / N_RAYS);

@@ -1,12 +1,12 @@
 SRC = src
 
-CFLAGS = -Wall -Wextra -Werror -pedantic -std=c11
+CFLAGS = -Wall -Wextra -pedantic -std=c11
 OPTFLAGS = -O2 -march=native -ffast-math -fomit-frame-pointer -g
 LDFLAGS = -lm
 
 .PHONY: clean
 
-raytracer: $(SRC)/main.o $(SRC)/sphere.o $(SRC)/point.o $(SRC)/ray.o $(SRC)/scene.o
+raytracer: $(SRC)/main.o $(SRC)/sphere.o $(SRC)/point.o $(SRC)/ray.o $(SRC)/scene.o $(SRC)/plane.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
 $(SRC)/%.o: $(SRC)/%.c $(SRC)/%.h

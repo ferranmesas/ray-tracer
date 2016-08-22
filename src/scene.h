@@ -4,11 +4,14 @@
 #include <stdio.h>
 
 #include "sphere.h"
+#include "plane.h"
 #include "ray.h"
 
 typedef struct {
   int n_spheres;
-  sphere* spheres;
+  sphere *spheres;
+  int n_planes;
+  plane *planes;
 } scene;
 
 void read_scene(scene *s, FILE *f);
