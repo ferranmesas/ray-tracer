@@ -5,7 +5,7 @@
 #include "scene.h"
 #include "ray.h"
 
-#define EPS 1.0E-5
+#define EPS 1.0E-3
 
 void read_scene(scene *s, FILE *f) {
   fscanf(f, "%d\n", &s->n_spheres);
@@ -33,15 +33,18 @@ float scene_distance(const scene s, const point p) {
 
 void scene_get_normal(const scene s, const point p, ray * normal) {
   normal->source = p;
-  point tmp = p;
-  tmp.x += EPS;
-  normal->dir.x = scene_distance(s, p) - scene_distance(s, tmp);
-  tmp = p;
-  tmp.y += EPS;
-  normal->dir.y = scene_distance(s, p) - scene_distance(s, tmp);
-  tmp = p;
-  tmp.z += EPS;
-  normal->dir.z = scene_distance(s, p) - scene_distance(s, tmp);
+  point a = p, b = p;
+  a.x -= EPS / 2;
+  b.x += EPS / 2;
+  normal->dir.x = scene_distance(s, a) - scene_distance(s, b);
+  a = b = p;
+  a.y -= EPS / 2;
+  b.y += EPS / 2;
+  normal->dir.y = scene_distance(s, a) - scene_distance(s, b);
+  a = b = p;
+  a.z -= EPS / 2;
+  b.z += EPS / 2;
+  normal->dir.z = scene_distance(s, a) - scene_distance(s, b);
 
   normalize(&normal->dir);
 }

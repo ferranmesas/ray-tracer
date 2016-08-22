@@ -9,9 +9,9 @@
 #include "scene.h"
 
 #define EPS 1.0E-3
-#define MAX_ITER 100
+#define MAX_ITER 1024
 #define MAX_DIST 100.0f
-#define N_RAYS 32
+#define N_RAYS 16
 
 int intersects(ray r, const scene s, point *intersection);
 
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
           }
         };
         normalize(&current_ray.dir);
-        
+
         point intersection;
         ray normal, light, reflection, light_reflection;
         if (intersects(current_ray, s, &intersection)) {
