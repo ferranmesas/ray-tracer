@@ -7,11 +7,12 @@
 #include "point.h"
 #include "ray.h"
 #include "scene.h"
+#include "color.h"
 
 #define EPS 1.0E-3
 #define MAX_ITER 2048
 #define MAX_DIST 80.0f
-#define N_RAYS 16
+#define N_RAYS 4
 
 int intersect(ray r, const scene s, point *intersection);
 
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
       float u = 2.0f * i / (min_dim - 1) - (1.0f * height / min_dim);
       float v = 2.0f * j / (min_dim - 1) - (1.0f * width / min_dim);
 
-      float total_light = 0;
+      color_hsl pixel_color_hsl = {0};
       for (int k = 0; k < N_RAYS; k ++) {
         // TODO: Calculate proper ray source and direction for each pixel!
         // need to adjust for perspective
@@ -81,6 +82,8 @@ int main(int argc, char* argv[]) {
         ray_from_to(&current_ray, pixel, camera);
         ray_reverse(&current_ray);
 
+        color_hsl ray_color;
+
         point intersection, light_intersection;
         ray normal, incident_light;
         ray reflection, light_reflection;
@@ -99,24 +102,27 @@ int main(int argc, char* argv[]) {
           intersect(incident_light, s, &light_intersection);
           int is_shadow = distance(light_intersection, intersection) > EPS;
 
-          float ambient_light = 0.1;
-          float specular_light = 0;
 
-          float ray_light;
           if(diffuse_light > 0 && !is_shadow) {
-            specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 20);
-            ray_light = ambient_light + 0.6 * diffuse_light + 0.4 * specular_light;
+            float specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 20);
+            ray_color.l = 0.1 + 0.6 * diffuse_light + 0.4 * specular_light;
           } else {
-            ray_light = ambient_light;
+            ray_color.l = 0.1;
           }
 
           float fog_amount = distance(camera, intersection) / MAX_DIST;
-          total_light += fog_amount * 0.8 + (1 - fog_amount) * ray_light;
+          pixel_color_hsl.l += fog_amount * 0.8 + (1 - fog_amount) * ray_color.l;
         }
       }
-      putchar((char) clip(0, 255,  255 * total_light / N_RAYS));
-      putchar((char) clip(0, 255, 255 * total_light / N_RAYS));
-      putchar((char) clip(0, 255, 255 * total_light / N_RAYS));
+
+      color_rgb pixel_color_rgb;
+      pixel_color_hsl.h = 0.66;
+      pixel_color_hsl.s = 0;
+      pixel_color_hsl.l = clip(0.0f, 1.0f, pixel_color_hsl.l / N_RAYS);
+      hsl2rgb(pixel_color_hsl, &pixel_color_rgb);
+      putchar(pixel_color_rgb.r);
+      putchar(pixel_color_rgb.g);
+      putchar(pixel_color_rgb.b);
     }
   }
 }
