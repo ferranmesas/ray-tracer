@@ -11,8 +11,8 @@
 
 #define EPS 1.0E-3
 #define MAX_ITER 2048
-#define MAX_DIST 80.0f
-#define N_RAYS 4
+#define MAX_DIST 100.0f
+#define N_RAYS 32
 
 int intersect(ray r, const scene s, point *intersection);
 
@@ -111,13 +111,14 @@ int main(int argc, char* argv[]) {
           }
 
           float fog_amount = distance(camera, intersection) / MAX_DIST;
-          pixel_color_hsl.l += fog_amount * 0.8 + (1 - fog_amount) * ray_color.l;
+          pixel_color_hsl.l += fog_amount*0.7 + (1 - fog_amount) * ray_color.l;
+          pixel_color_hsl.s += (1 - fog_amount);
         }
       }
 
       color_rgb pixel_color_rgb;
       pixel_color_hsl.h = 0.66;
-      pixel_color_hsl.s = 0;
+      pixel_color_hsl.s = clip(0.0f, 1.0f, pixel_color_hsl.s / N_RAYS);
       pixel_color_hsl.l = clip(0.0f, 1.0f, pixel_color_hsl.l / N_RAYS);
       hsl2rgb(pixel_color_hsl, &pixel_color_rgb);
       putchar(pixel_color_rgb.r);
