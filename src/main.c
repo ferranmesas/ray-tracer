@@ -107,9 +107,9 @@ int main(int argc, char* argv[]) {
 
           if(diffuse_light > 0 && !is_shadow) {
             float specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 20);
-            ray_color.l = 0.1 + 0.6 * diffuse_light + 0.4 * specular_light;
+            ray_color.l = 0.0 + 1 * diffuse_light + 0.0 * specular_light;
           } else {
-            ray_color.l = 0.1;
+            ray_color.l = 0.0;
           }
 
           fog_amount += distance(camera, intersection) / MAX_DIST;
@@ -119,8 +119,8 @@ int main(int argc, char* argv[]) {
 
       color_rgb pixel_color_rgb;
 
-      pixel_color_hsl.h = 0.66;
-      pixel_color_hsl.s = 1.0f;
+      pixel_color_hsl.h = 0.0f;
+      pixel_color_hsl.s = 0.5f;
       pixel_color_hsl.l = clip(0.0f, 1.0f, pixel_color_hsl.l / N_RAYS);
 
       hsl2rgb(pixel_color_hsl, &pixel_color_rgb);
