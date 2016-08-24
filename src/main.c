@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
       float u = 2.0f * i / (min_dim - 1) - (1.0f * height / min_dim);
       float v = 2.0f * j / (min_dim - 1) - (1.0f * width / min_dim);
 
-      color_hsl pixel_color_hsl = {0};
+      color_hsl pixel_color_hsl = {0, 0, 0};
       float fog_amount = 0.0f;
 
       for (int k = 0; k < N_RAYS; k ++) {
