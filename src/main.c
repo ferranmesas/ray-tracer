@@ -12,7 +12,7 @@
 #define EPS 1.0E-3
 #define MAX_ITER 2048
 #define MAX_DIST 100.0f
-#define N_RAYS 32
+#define N_RAYS 16
 
 int intersect(ray r, const scene s, point *intersection);
 
@@ -61,9 +61,11 @@ int main(int argc, char* argv[]) {
       float v = 2.0f * j / (min_dim - 1) - (1.0f * width / min_dim);
 
       color_hsl pixel_color_hsl = {0};
+      float fog_amount = 0.0f;
+
       for (int k = 0; k < N_RAYS; k ++) {
+
         // TODO: Calculate proper ray source and direction for each pixel!
-        // need to adjust for perspective
         #if N_RAYS > 1
         float pixel_eps = 2.0f / (min_dim - 1);
         point pixel = {
@@ -110,17 +112,20 @@ int main(int argc, char* argv[]) {
             ray_color.l = 0.1;
           }
 
-          float fog_amount = distance(camera, intersection) / MAX_DIST;
-          pixel_color_hsl.l += fog_amount*0.7 + (1 - fog_amount) * ray_color.l;
-          pixel_color_hsl.s += (1 - fog_amount);
+          fog_amount += distance(camera, intersection) / MAX_DIST;
+          pixel_color_hsl.l += ray_color.l;
         }
       }
 
       color_rgb pixel_color_rgb;
+
       pixel_color_hsl.h = 0.66;
-      pixel_color_hsl.s = clip(0.0f, 1.0f, pixel_color_hsl.s / N_RAYS);
+      pixel_color_hsl.s = 1.0f;
       pixel_color_hsl.l = clip(0.0f, 1.0f, pixel_color_hsl.l / N_RAYS);
+
       hsl2rgb(pixel_color_hsl, &pixel_color_rgb);
+
+      pixel_color_rgb = blend_rgb(pixel_color_rgb, COLOR_SKY, fog_amount / N_RAYS);
       putchar(pixel_color_rgb.r);
       putchar(pixel_color_rgb.g);
       putchar(pixel_color_rgb.b);
