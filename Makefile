@@ -13,4 +13,4 @@ $(SRC)/%.o: $(SRC)/%.c $(SRC)/%.h
 	$(CC) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
 
 clean:
-	rm raytracer src/*.o
+	rm -f raytracer src/*.o

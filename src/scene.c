@@ -45,7 +45,7 @@ float scene_distance(const scene s, const point p) {
   return min_dist;
 }
 
-void scene_get_normal(const scene s, const point p, ray * normal) {
+void scene_get_normal(const scene s, const point p, ray *normal) {
   normal->source = p;
   point a = p, b = p;
   a.x -= EPS / 2;
