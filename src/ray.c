@@ -22,7 +22,7 @@ void ray_reverse(ray *r) {
   r->dir.z = -r->dir.z;
 }
 
-void ray_reflect(const ray r, const ray normal, ray *reflection) {
+void ray_reflect(ray *reflection, const ray r, const ray normal) {
   reflection->source = normal.source;
   float dot = dot_product(r.dir, normal.dir);
   reflection->dir.x = r.dir.x - 2 * normal.dir.x * dot;

@@ -91,8 +91,8 @@ int main(int argc, char* argv[]) {
           scene_get_normal(s, intersection, &normal);
           ray_from_to(&incident_light, light_source, normal.source);
 
-          ray_reflect(current_ray, normal, &reflection);
-          ray_reflect(incident_light, normal, &light_reflection);
+          ray_reflect(&reflection, current_ray, normal);
+          ray_reflect(&light_reflection, incident_light, normal);
 
           // We calculate diffuse light first because it tells us if the light
           // is visible from the point. If it is, we'll need to calculate shadows,
