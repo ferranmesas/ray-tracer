@@ -6,6 +6,7 @@
 #include "sphere.h"
 #include "plane.h"
 #include "ray.h"
+#include "color.h"
 
 #define EPS 1.0E-3
 
@@ -45,22 +46,42 @@ float scene_distance(const scene s, const point p) {
   return min_dist;
 }
 
-void scene_get_normal(const scene s, const point p, ray *normal) {
-  normal->source = p;
+ray scene_get_normal(const scene s, const point p) {
+  ray normal;
+  normal.source = p;
   point a = p, b = p;
   a.x -= EPS / 2;
   b.x += EPS / 2;
-  normal->dir.x = scene_distance(s, a) - scene_distance(s, b);
+  normal.dir.x = scene_distance(s, a) - scene_distance(s, b);
   a = b = p;
   a.y -= EPS / 2;
   b.y += EPS / 2;
-  normal->dir.y = scene_distance(s, a) - scene_distance(s, b);
+  normal.dir.y = scene_distance(s, a) - scene_distance(s, b);
   a = b = p;
   a.z -= EPS / 2;
   b.z += EPS / 2;
-  normal->dir.z = scene_distance(s, a) - scene_distance(s, b);
+  normal.dir.z = scene_distance(s, a) - scene_distance(s, b);
 
-  normalize(&normal->dir);
+  normalize(&normal.dir);
+  return normal;
+}
+
+color scene_get_color(const scene s, const point p) {
+  return (color) {0.7, 0, 0};
+
+  for (int k = 0; k < s.n_spheres; k++) {
+    float dist = sphere_distance(s.spheres[k], p);
+    if (dist < EPS) {
+      return (color) {1, 0, 0};
+    }
+  }
+
+  for (int k = 0; k < s.n_planes; k++) {
+    float dist = plane_distance(s.planes[k], p);
+    if (dist < EPS) {
+      return (color) {0, 1, 0};
+    }
+  }
 }
 
 void free_scene(scene *s) {

@@ -6,6 +6,7 @@
 #include "sphere.h"
 #include "plane.h"
 #include "ray.h"
+#include "color.h"
 
 typedef struct {
   int n_spheres;
@@ -18,7 +19,9 @@ void read_scene(scene *s, FILE *f);
 
 float scene_distance(const scene s, const point p);
 
-void scene_get_normal(const scene s, const point p, ray * normal);
+ray scene_get_normal(const scene s, const point p);
+
+color scene_get_color(const scene s, const point p);
 
 void free_scene(scene *s);
 

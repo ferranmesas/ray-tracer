@@ -2,17 +2,19 @@
 #define COLOR_H
 
 typedef struct {
-    float h, s, l;
-} color_hsl;
+    float r, g, b;
+} color;
 
-typedef struct {
-    unsigned char r, g, b;
-} color_rgb;
+extern const color COLOR_WHITE;
+extern const color COLOR_BLACK;
 
-extern const color_rgb COLOR_SKY;
+extern const color COLOR_SKY;
 
-color_rgb hsl2rgb(const color_hsl hsl);
+color color_blend(const color a, const color b, float amount);
 
-color_rgb blend_rgb(const color_rgb a, const color_rgb b, float amount);
+color color_add(const color a, const color b);
+
+color color_multiply(const color c, float value);
+
 
 #endif //RAY_TRACER_COLOR_H

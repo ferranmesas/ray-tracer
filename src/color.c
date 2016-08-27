@@ -1,29 +1,37 @@
 #include <math.h>
-
+#include <stdio.h>
 #include "color.h"
 
-#ifndef M_PI
-#define M_PI (3.14159265358979323846)
-#endif
+const color COLOR_WHITE = {1, 1, 1};
+const color COLOR_BLACK = {0, 0, 0};
 
-
-const color_rgb COLOR_SKY = {198, 222, 255};
+const color COLOR_SKY = {0.775, 0.87, 1};
 
 // Code from http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
 
-color_rgb hsl2rgb(const color_hsl hsl) {
-  color_rgb result = {
-
-  };
-
-  return result;
-}
-
-color_rgb blend_rgb(const color_rgb a, const color_rgb b, float amount) {
-  color_rgb blended = {
+color color_blend(const color a, const color b, const float amount) {
+  color blended = {
     .r = (a.r * (1.0f - amount) + b.r * amount),
     .g = (a.g * (1.0f - amount) + b.g * amount),
     .b = (a.b * (1.0f - amount) + b.b * amount),
   };
   return blended;
+}
+
+color color_add(const color a, const color b) {
+  color added = {
+    .r = a.r + b.r,
+    .g = a.g + b.g,
+    .b = a.b + b.b,
+  };
+  return added;
+}
+
+color color_multiply(const color c, float value) {
+  color multiplied = {
+    .r = c.r * value,
+    .g = c.g * value,
+    .b = c.b * value,
+  };
+  return multiplied;
 }
