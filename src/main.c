@@ -3,19 +3,14 @@
 #include <math.h>
 #include <time.h>
 
+#include "defines.h"
+
 #include "sphere.h"
 #include "point.h"
 #include "ray.h"
 #include "scene.h"
 #include "color.h"
 #include "utils.h"
-
-#define EPS 1.0E-3
-#define MAX_ITER 2048
-#define MAX_DIST 100.0f
-#define N_RAYS 1
-
-int intersect(ray r, const scene s, point *intersection);
 
 int main(int argc, char* argv[]) {
   srand(time(NULL));
@@ -80,16 +75,14 @@ int main(int argc, char* argv[]) {
         float ray_light_amount = 0.0f;
         float ray_fog_amount = 0.0f;
 
-
         point intersection;
         ray normal;
         ray reflection;
 
-        if (intersect(current_ray, s, &intersection)) {
+        if (scene_get_intersection(s, current_ray, &intersection)) {
           normal = scene_get_normal(s, intersection);
           ray_color = scene_get_color(s, intersection);
-
-          ray_light_amount = scene_get_light(s, normal);
+          ray_light_amount = scene_get_light(s, current_ray, normal);
 
           ray_reflect(&reflection, current_ray, normal);
 
@@ -123,40 +116,4 @@ int main(int argc, char* argv[]) {
       putchar(255 * clamp(final_color.b, 0.0f, 1.0f));
     }
   }
-}
-
-int intersect(ray r, const scene s, point *intersection) {
-  point ray_source = r.source;
-  for (int i = 0; i < MAX_ITER; i++){
-    // find closest sphere and the normal
-    float min_dist = scene_distance(s, r.source);
-
-    // we got real close to an object. advance slowly until we get inside.
-    //fprintf(stderr, "%d, %f\n", i, min_dist);
-    if (min_dist < 0) {
-      // We are inside an object! let's find a point outside and linearly interpolate
-      // to find the exct border of the object.
-      point inside = r.source;
-      double dist_inside = scene_distance(s, inside);
-      while(scene_distance(s, r.source) <= 0) {
-        ray_advance(&r, -EPS);
-      }
-      point outside = r.source;
-      double dist_outside = scene_distance(s, outside);
-
-      double interp = dist_outside / (dist_outside - dist_inside);
-      ray_advance(&r, interp * distance(inside, outside));
-      *intersection = r.source;
-      return 1;
-    }
-    if (min_dist < EPS) {
-      min_dist = EPS;
-    }
-    // We went too far away of the original ray
-    if (distance(ray_source, r.source) > MAX_DIST) {
-      return 0;
-    }
-    ray_advance(&r, min_dist);
-  }
-  return 0;
 }

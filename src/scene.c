@@ -2,14 +2,13 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "defines.h"
 #include "scene.h"
 #include "sphere.h"
 #include "plane.h"
 #include "ray.h"
 #include "color.h"
 #include "utils.h"
-
-#define EPS 1.0E-3
 
 void read_scene(scene *s, FILE *fp) {
 
@@ -48,6 +47,36 @@ float scene_distance(const scene s, const point p) {
   return min_dist;
 }
 
+int scene_get_intersection(const scene s, const ray incident_ray, point *intersection) {
+  ray r = incident_ray;
+  for (int i = 0; i < MAX_ITER; i++){
+    float min_dist = scene_distance(s, r.source);
+
+    if (min_dist < 0) {
+      point inside = r.source;
+      double dist_inside = scene_distance(s, inside);
+      while(scene_distance(s, r.source) <= 0) {
+        ray_advance(&r, -EPS);
+      }
+      point outside = r.source;
+      double dist_outside = scene_distance(s, outside);
+
+      double interp = dist_outside / (dist_outside - dist_inside);
+      ray_advance(&r, interp * distance(inside, outside));
+      *intersection = r.source;
+      return 1;
+    }
+    if (min_dist < EPS) {
+      min_dist = EPS;
+    }
+    if (distance(incident_ray.source, r.source) > MAX_DIST) {
+      return 0;
+    }
+    ray_advance(&r, min_dist);
+  }
+  return 0;
+}
+
 ray scene_get_normal(const scene s, const point p) {
   ray normal;
   normal.source = p;
@@ -68,7 +97,7 @@ ray scene_get_normal(const scene s, const point p) {
   return normal;
 }
 
-float scene_get_light(const scene s, const ray normal) {
+float scene_get_light(const scene s, const ray incident_ray, const ray normal) {
 
   ray incident_light;
   ray_from_to(&incident_light, s.light_source, normal.source);
@@ -80,7 +109,7 @@ float scene_get_light(const scene s, const ray normal) {
   }
 
   point light_intersection;
-  intersect(incident_light, s, &light_intersection);
+  scene_get_intersection(s, incident_light, &light_intersection);
   int is_shadow = distance(light_intersection, normal.source) > EPS;
   if (is_shadow) {
     return 0.05;
@@ -89,7 +118,7 @@ float scene_get_light(const scene s, const ray normal) {
   ray light_reflection;
   ray_reflect(&light_reflection, incident_light, normal);
 
-  float specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 15);
+  float specular_light = pow(max(0, -dot_product(light_reflection.dir, incident_ray.dir)), 15);
   return 0.05 + diffuse_light + 0.5 * specular_light;
 }
 
