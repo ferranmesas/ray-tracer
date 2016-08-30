@@ -7,10 +7,13 @@
 #include "plane.h"
 #include "ray.h"
 #include "color.h"
+#include "utils.h"
 
 #define EPS 1.0E-3
 
 void read_scene(scene *s, FILE *fp) {
+
+  fscanf(fp, "%f %f %f\n", &(s->light_source.x), &(s->light_source.y), &(s->light_source.z));
 
   fscanf(fp, "%d\n", &s->n_spheres);
   s->spheres = (sphere*) malloc(s->n_spheres * sizeof(sphere));
@@ -23,7 +26,6 @@ void read_scene(scene *s, FILE *fp) {
   for (int i = 0; i < s->n_planes; i++) {
     read_plane(&s->planes[i], fp);
   }
-
 }
 
 float scene_distance(const scene s, const point p) {
@@ -64,6 +66,31 @@ ray scene_get_normal(const scene s, const point p) {
 
   normalize(&normal.dir);
   return normal;
+}
+
+float scene_get_light(const scene s, const ray normal) {
+
+  ray incident_light;
+  ray_from_to(&incident_light, s.light_source, normal.source);
+
+  float diffuse_light = max(0, dot_product(normal.dir, incident_light.dir));
+
+  if (diffuse_light < 0) {
+    return 0.05;
+  }
+
+  point light_intersection;
+  intersect(incident_light, s, &light_intersection);
+  int is_shadow = distance(light_intersection, normal.source) > EPS;
+  if (is_shadow) {
+    return 0.05;
+  }
+
+  ray light_reflection;
+  ray_reflect(&light_reflection, incident_light, normal);
+
+  float specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 15);
+  return 0.05 + diffuse_light + 0.5 * specular_light;
 }
 
 color scene_get_color(const scene s, const point p) {

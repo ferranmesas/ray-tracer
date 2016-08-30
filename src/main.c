@@ -8,6 +8,7 @@
 #include "ray.h"
 #include "scene.h"
 #include "color.h"
+#include "utils.h"
 
 #define EPS 1.0E-3
 #define MAX_ITER 2048
@@ -16,17 +17,6 @@
 
 int intersect(ray r, const scene s, point *intersection);
 
-float max(float a, float b) {
-  return a > b ? a : b;
-}
-
-float min(float a, float b) {
-  return a < b ? a : b;
-}
-
-float clamp(float value, float lower, float upper) {
-  return max(lower, min(upper, value));
-}
 int main(int argc, char* argv[]) {
   srand(time(NULL));
   int height, width, min_dim;
@@ -41,10 +31,9 @@ int main(int argc, char* argv[]) {
 
   min_dim = height < width ? height : width;
 
-  point camera, dir, light_source;
+  point camera, dir;
   scanf("%f %f %f\n", &(camera.x), &(camera.y), &(camera.z));
   scanf("%f %f %f\n", &(dir.x), &(dir.y), &(dir.z));
-  scanf("%f %f %f\n", &(light_source.x), &(light_source.y), &(light_source.z));
 
   scene s;
 
@@ -92,32 +81,22 @@ int main(int argc, char* argv[]) {
         float ray_fog_amount = 0.0f;
 
 
-        point intersection, light_intersection;
-        ray normal, incident_light;
-        ray reflection, light_reflection;
+        point intersection;
+        ray normal;
+        ray reflection;
+
         if (intersect(current_ray, s, &intersection)) {
           normal = scene_get_normal(s, intersection);
           ray_color = scene_get_color(s, intersection);
-          ray_from_to(&incident_light, light_source, normal.source);
+
+          ray_light_amount = scene_get_light(s, normal);
 
           ray_reflect(&reflection, current_ray, normal);
-          ray_reflect(&light_reflection, incident_light, normal);
 
           // We calculate diffuse light first because it tells us if the light
           // is visible from the point. If it is, we'll need to calculate shadows,
           // specular lights, etc.
-          float diffuse_light = max(0, dot_product(normal.dir, incident_light.dir));
 
-          intersect(incident_light, s, &light_intersection);
-          int is_shadow = distance(light_intersection, intersection) > EPS;
-
-          if(diffuse_light > 0 && !is_shadow) {
-            float specular_light = pow(max(0, -dot_product(light_reflection.dir, current_ray.dir)), 15);
-            ray_light_amount = 0.05 + diffuse_light + 0.5 * specular_light;
-
-          } else {
-            ray_light_amount = 0.05;
-          }
           ray_fog_amount = distance(camera, intersection) / MAX_DIST;
         }
         final_color = color_add(final_color, ray_color);
