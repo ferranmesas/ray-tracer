@@ -12,6 +12,10 @@
 #include "color.h"
 #include "utils.h"
 
+color ray_march(const scene s, const ray r, const int max_reflections);
+
+color color_bake(const color c, const float light, const float fog);
+
 int main(int argc, char* argv[]) {
   srand(time(NULL));
   int height, width, min_dim;
@@ -44,76 +48,70 @@ int main(int argc, char* argv[]) {
       float u = 2.0f * i / (min_dim - 1) - (1.0f * height / min_dim);
       float v = 2.0f * j / (min_dim - 1) - (1.0f * width / min_dim);
 
-
-      color final_color = {0, 0, 0};
-      float final_fog_amount = 0.0f;
-      float final_light_amount = 0.0f;
+      color final_color = COLOR_BLACK;
 
       for (int k = 0; k < N_RAYS; k ++) {
 
         // TODO: Calculate proper ray source and direction for each pixel!
-        #if N_RAYS > 1
+
         float pixel_eps = 2.0f / (min_dim - 1);
         point pixel = {
           u + pixel_eps * (1.0f * rand() / RAND_MAX - 0.5),
           length(dir),
           v + pixel_eps * (1.0f * rand() / RAND_MAX - 0.5)
         };
-        #else
-        point pixel = {
-          u,
-          length(dir),
-          v
-        };
-        #endif
 
         ray current_ray;
         ray_from_to(&current_ray, pixel, camera);
         ray_reverse(&current_ray);
 
-        color ray_color = {0, 0, 0};
-        float ray_light_amount = 0.0f;
-        float ray_fog_amount = 0.0f;
+        color ray_color = ray_march(s, current_ray, MAX_REFLECTIONS);
 
-        point intersection;
-        ray normal;
-        ray reflection;
-
-        if (scene_get_intersection(s, current_ray, &intersection)) {
-          normal = scene_get_normal(s, intersection);
-          ray_color = scene_get_color(s, intersection);
-          ray_light_amount = scene_get_light(s, current_ray, normal);
-
-          ray_reflect(&reflection, current_ray, normal);
-
-          // We calculate diffuse light first because it tells us if the light
-          // is visible from the point. If it is, we'll need to calculate shadows,
-          // specular lights, etc.
-
-          ray_fog_amount = distance(camera, intersection) / MAX_DIST;
-        }
         final_color = color_add(final_color, ray_color);
-        final_fog_amount += ray_fog_amount;
-        final_light_amount += ray_light_amount;
       }
-
-      final_fog_amount /= N_RAYS;
-      final_light_amount = final_light_amount / N_RAYS;
-
 
       final_color = color_multiply(final_color, 1.0f / N_RAYS);
-
-      final_color = color_multiply(final_color, final_light_amount);
-
-      if(final_light_amount > 1) {
-        final_color = color_blend(final_color, COLOR_WHITE, final_light_amount - 1);
-      }
-
-      final_color = color_blend(final_color, COLOR_SKY, final_fog_amount);
 
       putchar(255 * clamp(final_color.r, 0.0f, 1.0f));
       putchar(255 * clamp(final_color.g, 0.0f, 1.0f));
       putchar(255 * clamp(final_color.b, 0.0f, 1.0f));
     }
   }
+}
+
+color ray_march(const scene s, const ray r, const int max_reflections) {
+  point ray_source = r.source;
+  if (!max_reflections) {
+    return COLOR_BLACK;
+  }
+
+  point intersection;
+
+  if (!scene_get_intersection(s, r, &intersection)) {
+    return COLOR_SKY;
+  }
+
+  ray normal = scene_get_normal(s, intersection);
+  color ray_color = scene_get_color(s, intersection);
+  float ray_light = scene_get_light(s, r, normal);
+  float ray_fog = distance(ray_source, intersection) / MAX_DIST;
+
+  color this_color = color_bake(ray_color, ray_light, ray_fog);
+
+  ray reflection;
+  ray_reflect(&reflection, r, normal);
+
+  color reflection_color = ray_march(s, reflection, max_reflections - 1);
+
+  return color_blend(this_color, reflection_color, 0.4);
+}
+
+color color_bake(const color hue, const float light, const float fog) {
+  color final_color = color_multiply(hue, light);
+  if(light > 1) {
+    final_color = color_blend(final_color, COLOR_WHITE, 2*(light - 1));
+  }
+  final_color = color_blend(final_color, COLOR_SKY, fog);
+
+  return final_color;
 }
