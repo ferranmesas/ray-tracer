@@ -54,14 +54,14 @@ int scene_get_intersection(const scene s, const ray incident_ray, point *interse
 
     if (min_dist < 0) {
       point inside = r.source;
-      double dist_inside = scene_distance(s, inside);
+      float dist_inside = scene_distance(s, inside);
       while(scene_distance(s, r.source) <= 0) {
         ray_advance(&r, -EPS);
       }
       point outside = r.source;
-      double dist_outside = scene_distance(s, outside);
+      float dist_outside = scene_distance(s, outside);
 
-      double interp = dist_outside / (dist_outside - dist_inside);
+      float interp = dist_outside / (dist_outside - dist_inside);
       ray_advance(&r, interp * distance(inside, outside));
       *intersection = r.source;
       return 1;
@@ -123,21 +123,20 @@ float scene_get_light(const scene s, const ray incident_ray, const ray normal) {
 }
 
 color scene_get_color(const scene s, const point p) {
-  return (color) {0.7, 0, 0};
-
   for (int k = 0; k < s.n_spheres; k++) {
     float dist = sphere_distance(s.spheres[k], p);
     if (dist < EPS) {
-      return (color) {1, 0, 0};
+      return (color) {0.9, 0, 0};
     }
   }
 
   for (int k = 0; k < s.n_planes; k++) {
     float dist = plane_distance(s.planes[k], p);
     if (dist < EPS) {
-      return (color) {0, 1, 0};
+      return (color) {0, 0.7, 0.9};
     }
   }
+  return (color){1, 1, 1};
 }
 
 void free_scene(scene *s) {
