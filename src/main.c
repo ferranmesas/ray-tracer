@@ -16,6 +16,8 @@ color ray_march(const scene s, const ray r, const int max_reflections);
 
 color color_bake(const color c, const float light, const float fog);
 
+float triangular_noise();
+
 int main(int argc, char* argv[]) {
   srand(time(NULL));
   int height, width, min_dim;
@@ -54,11 +56,15 @@ int main(int argc, char* argv[]) {
 
         // TODO: Calculate proper ray source and direction for each pixel!
 
-        float pixel_eps = 2.0f / (min_dim - 1);
+        #if N_RAYS > 1
+        float pixel_eps = 1.0f / (min_dim - 1);
+        #else
+        float pixel_eps = 0.0f;
+        #endif
         point pixel = {
-          u + pixel_eps * (1.0f * rand() / RAND_MAX - 0.5),
+          u + pixel_eps * triangular_noise(),
           length(dir),
-          v + pixel_eps * (1.0f * rand() / RAND_MAX - 0.5)
+          v + pixel_eps * triangular_noise()
         };
 
         ray current_ray;
@@ -114,4 +120,8 @@ color color_bake(const color hue, const float light, const float fog) {
   final_color = color_blend(final_color, COLOR_SKY, fog);
 
   return final_color;
+}
+
+float triangular_noise() {
+  return ((float) rand() / RAND_MAX) + ((float) rand() / RAND_MAX) - 1.0f;
 }
