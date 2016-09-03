@@ -44,6 +44,7 @@ int main(int argc, char* argv[]) {
   // netpbm header
   printf("P6\n%d %d\n255\n", width, height);
   for (int i = 0; i < height; i++) {
+    fprintf(stderr, "%d / %d\n", i, height);
     for (int j = 0; j < width; j++) {
       // both u and v are scaled by the same value (min_dim) in order to preserve
       // the aspect ratio.
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
       color final_color = COLOR_BLACK;
 
       for (int k = 0; k < N_RAYS; k ++) {
+        //fprintf(stderr, "%d, %d, %d\n", i, j, k);
 
         // TODO: Calculate proper ray source and direction for each pixel!
 
@@ -71,6 +73,10 @@ int main(int argc, char* argv[]) {
         ray_from_to(&current_ray, pixel, camera);
         ray_reverse(&current_ray);
 
+        if(scene_distance(s, current_ray.source) < 0) {
+          fprintf(stderr, "Image plane intersects scene!\n");
+          continue;
+        }
         color ray_color = ray_march(s, current_ray, MAX_REFLECTIONS);
 
         final_color = color_add(final_color, ray_color);
@@ -99,6 +105,8 @@ color ray_march(const scene s, const ray r, const int max_reflections) {
 
   ray normal = scene_get_normal(s, intersection);
   color ray_color = scene_get_color(s, intersection);
+  float reflectivity = scene_get_reflectivity(s, intersection);
+
   float ray_light = scene_get_light(s, r, normal);
   float ray_fog = distance(ray_source, intersection) / MAX_DIST;
 
@@ -106,10 +114,11 @@ color ray_march(const scene s, const ray r, const int max_reflections) {
 
   ray reflection;
   ray_reflect(&reflection, r, normal);
+  ray_advance(&reflection, EPS);
 
   color reflection_color = ray_march(s, reflection, max_reflections - 1);
 
-  return color_blend(this_color, reflection_color, 0.4);
+  return color_blend(this_color, reflection_color, reflectivity);
 }
 
 color color_bake(const color hue, const float light, const float fog) {
