@@ -10,6 +10,10 @@
 #include "color.h"
 #include "utils.h"
 
+int mymod(float f) {
+  return fabsf(fmodf(floor(f), 2));
+}
+
 void read_scene(scene *s, FILE *fp) {
 
   fscanf(fp, "%f %f %f\n", &(s->light_source.x), &(s->light_source.y), &(s->light_source.z));
@@ -134,7 +138,11 @@ color scene_get_color(const scene s, const point p) {
   for (int k = 0; k < s.n_planes; k++) {
     float dist = plane_distance(s.planes[k], p);
     if (dist < EPS) {
-      return (color) {0, 0.7, 0.9};
+      if(mymod(0.1 + p.z) ^ mymod(p.y)) {
+        return (color) {0.9, 0.1, 0.1};
+      } else {
+        return COLOR_WHITE;
+      }
     }
   }
   return (color){1, 1, 1};
