@@ -49,6 +49,7 @@ float scene_distance(const scene s, const point p) {
 
 int scene_get_intersection(const scene s, const ray incident_ray, point *intersection) {
   ray r = incident_ray;
+
   for (int i = 0; i < MAX_ITER; i++){
     float min_dist = scene_distance(s, r.source);
 
@@ -126,7 +127,7 @@ color scene_get_color(const scene s, const point p) {
   for (int k = 0; k < s.n_spheres; k++) {
     float dist = sphere_distance(s.spheres[k], p);
     if (dist < EPS) {
-      return (color) {0.9, 0, 0};
+      return (color) {0.7, 0.7, 0.7};
     }
   }
 
@@ -137,6 +138,23 @@ color scene_get_color(const scene s, const point p) {
     }
   }
   return (color){1, 1, 1};
+}
+
+float scene_get_reflectivity(const scene s, const point p) {
+  for (int k = 0; k < s.n_spheres; k++) {
+    float dist = sphere_distance(s.spheres[k], p);
+    if (dist < EPS) {
+      return 0.6;
+    }
+  }
+
+  for (int k = 0; k < s.n_planes; k++) {
+    float dist = plane_distance(s.planes[k], p);
+    if (dist < EPS) {
+      return 0.1;
+    }
+  }
+  return 0;
 }
 
 void free_scene(scene *s) {

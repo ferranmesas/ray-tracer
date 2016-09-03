@@ -28,6 +28,8 @@ float scene_get_light(const scene s, const ray incident_ray, const ray normal);
 
 color scene_get_color(const scene s, const point p);
 
+float scene_get_reflectivity(const scene s, const point p);
+
 void free_scene(scene *s);
 
 #endif // SCENE_H
