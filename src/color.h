@@ -10,6 +10,8 @@ extern const color COLOR_BLACK;
 
 extern const color COLOR_SKY;
 
+color color_bake(const color hue, const float light, const float fog);
+
 color color_blend(const color a, const color b, float amount);
 
 color color_add(const color a, const color b);

@@ -14,8 +14,6 @@
 
 color ray_march(const scene s, const ray r, const int max_reflections);
 
-color color_bake(const color c, const float light, const float fog);
-
 float triangular_noise();
 
 int main(int argc, char* argv[]) {
@@ -119,16 +117,6 @@ color ray_march(const scene s, const ray r, const int max_reflections) {
   color reflection_color = ray_march(s, reflection, max_reflections - 1);
 
   return color_blend(this_color, reflection_color, reflectivity);
-}
-
-color color_bake(const color hue, const float light, const float fog) {
-  color final_color = color_multiply(hue, light);
-  if(light > 1) {
-    final_color = color_blend(final_color, COLOR_WHITE, 2*(light - 1));
-  }
-  final_color = color_blend(final_color, COLOR_SKY, fog);
-
-  return final_color;
 }
 
 float triangular_noise() {

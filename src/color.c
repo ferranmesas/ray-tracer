@@ -7,7 +7,15 @@ const color COLOR_BLACK = {0, 0, 0};
 
 const color COLOR_SKY = {0.775, 0.87, 1};
 
-// Code from http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+color color_bake(const color hue, const float light, const float fog) {
+  color final_color = color_multiply(hue, light);
+  if(light > 1) {
+    final_color = color_blend(final_color, COLOR_WHITE, 2*(light - 1));
+  }
+  final_color = color_blend(final_color, COLOR_SKY, fog);
+
+  return final_color;
+}
 
 color color_blend(const color a, const color b, const float amount) {
   color blended = {
