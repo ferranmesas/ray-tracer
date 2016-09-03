@@ -131,14 +131,14 @@ color scene_get_color(const scene s, const point p) {
   for (int k = 0; k < s.n_spheres; k++) {
     float dist = sphere_distance(s.spheres[k], p);
     if (dist < EPS) {
-      return (color) {0.6, 0.8, 0.6};
+      return COLOR_BLACK;
     }
   }
 
   for (int k = 0; k < s.n_planes; k++) {
     float dist = plane_distance(s.planes[k], p);
     if (dist < EPS) {
-      if(mymod(0.1 + p.z) ^ mymod(p.y)) {
+      if(mymod(p.x) ^ mymod(p.z) ^ mymod(p.y)) {
         return (color) {0.9, 0.1, 0.1};
       } else {
         return COLOR_WHITE;
@@ -152,7 +152,7 @@ float scene_get_reflectivity(const scene s, const point p) {
   for (int k = 0; k < s.n_spheres; k++) {
     float dist = sphere_distance(s.spheres[k], p);
     if (dist < EPS) {
-      return 0.6;
+      return 0.7;
     }
   }
 
