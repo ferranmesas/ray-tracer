@@ -12,5 +12,5 @@ float plane_distance(const plane pl, const point p) {
     .y = pl.b,
     .z = pl.c
   };
-  return (pl.a * p.x + pl.b * p.y + pl.c *p.z + pl.d) / length(plane_point);
+  return (pl.a * p.x + pl.b * p.y + pl.c * p.z + pl.d) / length(plane_point);
 }
