@@ -138,7 +138,7 @@ color scene_get_color(const scene s, const point p) {
   for (int k = 0; k < s.n_planes; k++) {
     float dist = plane_distance(s.planes[k], p);
     if (dist < EPS) {
-      if(mymod(p.x) ^ mymod(p.z) ^ mymod(p.y)) {
+      if(mymod(p.z) ^ mymod(p.y)) {
         return (color) {0.9, 0.1, 0.1};
       } else {
         return COLOR_WHITE;
