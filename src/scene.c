@@ -110,21 +110,21 @@ float scene_get_light(const scene s, const ray incident_ray, const ray normal) {
   float diffuse_light = max(0, dot_product(normal.dir, incident_light.dir));
 
   if (diffuse_light < 0) {
-    return 0.1;
+    return 0.15;
   }
 
   point light_intersection;
   scene_get_intersection(s, incident_light, &light_intersection);
   int is_shadow = distance(light_intersection, normal.source) > EPS;
   if (is_shadow) {
-    return 0.1;
+    return 0.15;
   }
 
   ray light_reflection;
   ray_reflect(&light_reflection, incident_light, normal);
 
   float specular_light = pow(max(0, -dot_product(light_reflection.dir, incident_ray.dir)), 15);
-  return 0.1 + diffuse_light + 0.5 * specular_light;
+  return 0.15 + diffuse_light + 0.5f * specular_light;
 }
 
 color scene_get_color(const scene s, const point p) {
