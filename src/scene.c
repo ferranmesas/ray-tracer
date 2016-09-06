@@ -124,7 +124,7 @@ float scene_get_light(const scene s, const ray incident_ray, const ray normal) {
   ray_reflect(&light_reflection, incident_light, normal);
 
   float specular_light = pow(max(0, -dot_product(light_reflection.dir, incident_ray.dir)), 15);
-  return 0.15 + diffuse_light + 0.5f * specular_light;
+  return 0.15 + diffuse_light + 1.0f * specular_light;
 }
 
 color scene_get_color(const scene s, const point p) {
@@ -145,7 +145,7 @@ color scene_get_color(const scene s, const point p) {
       }
     }
   }
-  return (color){1, 1, 1};
+  return COLOR_WHITE;
 }
 
 float scene_get_reflectivity(const scene s, const point p) {
