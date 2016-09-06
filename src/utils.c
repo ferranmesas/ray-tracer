@@ -1,13 +1,13 @@
 #include "utils.h"
 
-float max(float a, float b) {
+float max(const float a, const float b) {
   return a > b ? a : b;
 }
 
-float min(float a, float b) {
+float min(const float a, const float b) {
   return a < b ? a : b;
 }
 
-float clamp(float value, float lower, float upper) {
+float clamp(const float value, const float lower, const float upper) {
   return max(lower, min(upper, value));
 }
