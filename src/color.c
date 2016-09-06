@@ -1,19 +1,21 @@
 #include <math.h>
 #include <stdio.h>
 #include "color.h"
+#include "utils.h"
 
 const color COLOR_WHITE = {1, 1, 1};
 const color COLOR_BLACK = {0, 0, 0};
 
 const color COLOR_SKY = {0.775, 0.87, 1};
 
+const color VERY_WHITE = {1.5, 1.5, 1.5};
+
 color color_bake(const color hue, const float light, const float fog) {
   color final_color = color_multiply(hue, light);
-  if(light > 1) {
-    final_color = color_blend(final_color, COLOR_WHITE, 2*(light - 1));
+  if(light > 1.0f) {
+    final_color = color_blend(final_color, VERY_WHITE, clamp((light - 1.0f), 0.0f, 1.0f));
   }
   final_color = color_blend(final_color, COLOR_SKY, fog);
-
   return final_color;
 }
 
