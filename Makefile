@@ -1,8 +1,9 @@
 SRC = src
 
-CFLAGS = -Wall -Wextra -pedantic -std=c11
+CFLAGS += $(shell pkg-config --cflags lua) -Wall -Wextra -pedantic -std=c11
+LDFLAGS += $(shell pkg-config --libs lua)
+
 OPTFLAGS = -O2 -march=native -ffast-math -fomit-frame-pointer -g
-LDFLAGS = -lm
 
 .PHONY: clean
 

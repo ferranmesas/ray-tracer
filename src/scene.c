@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include "defines.h"
 #include "scene.h"
 #include "sphere.h"
@@ -13,6 +17,13 @@
 int mymod(float f) {
   return fabsf(fmodf(floor(f), 2));
 }
+
+void bail(lua_State *L, char *msg){
+  fprintf(stderr, "\nFATAL ERROR:\n  %s: %s\n\n",
+          msg, lua_tostring(L, -1));
+  exit(1);
+}
+static lua_State *L;
 
 void read_scene(scene *s, FILE *fp) {
 
@@ -29,9 +40,29 @@ void read_scene(scene *s, FILE *fp) {
   for (int i = 0; i < s->n_planes; i++) {
     read_plane(&s->planes[i], fp);
   }
+
+  L = luaL_newstate();
+  luaL_openlibs(L);
+  if(luaL_loadfile(L, "lib.lua")) {
+    bail(L, "Cannot open scene file");
+  }
+  if(lua_pcall(L, 0, 0, 0)) {
+    bail(L, "Error in scene file");
+  }
 }
 
 float scene_distance(const scene s, const point p) {
+  lua_getglobal(L, "scene");
+  lua_pushnumber(L, p.x);
+  lua_pushnumber(L, p.y);
+  lua_pushnumber(L, p.z);
+  if(lua_pcall(L, 3, 1, 0)) {
+    bail(L, "Error running scene");
+  }
+  float res = lua_tonumber(L, -1);
+  lua_settop(L, 0);
+  return res;
+
   float min_dist = INFINITY;
 
   for (int k = 0; k < s.n_spheres; k++) {
