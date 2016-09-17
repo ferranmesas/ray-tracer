@@ -5,12 +5,12 @@
 
 #include "defines.h"
 
-#include "sphere.h"
 #include "point.h"
 #include "ray.h"
 #include "scene.h"
 #include "color.h"
 #include "utils.h"
+#include "material.h"
 
 color ray_march(const scene s, const ray r, const int max_reflections);
 
@@ -30,13 +30,15 @@ int main(int argc, char* argv[]) {
 
   min_dim = height < width ? height : width;
 
-  point camera, dir;
-  scanf("%f %f %f\n", &(camera.x), &(camera.y), &(camera.z));
-  scanf("%f %f %f\n", &(dir.x), &(dir.y), &(dir.z));
+  point camera = {
+    0,
+    -1,
+    0
+  };
 
   scene s;
 
-  read_scene(&s, stdin);
+  read_scene(&s, "lib.lua");
   // Done reading input, start tracing!
 
   // netpbm header
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
         #endif
         point pixel = {
           u + pixel_eps * triangular_noise(),
-          length(dir),
+          0,
           v + pixel_eps * triangular_noise()
         };
 
@@ -95,20 +97,19 @@ color ray_march(const scene s, const ray r, const int max_reflections) {
     return COLOR_BLACK;
   }
 
-  point intersection;
+  point intersection = {0, 0, 0};
 
   if (!scene_get_intersection(s, r, &intersection)) {
     return COLOR_SKY;
   }
 
   ray normal = scene_get_normal(s, intersection);
-  color ray_color = scene_get_color(s, intersection);
-  float reflectivity = scene_get_reflectivity(s, intersection);
+  material mat = scene_get_material(s, intersection);
 
-  float ray_light = scene_get_light(s, r, normal);
+  float ray_light = scene_get_light(s, r, normal, mat.reflectivity);
   float ray_fog = distance(ray_source, intersection) / MAX_DIST;
 
-  color this_color = color_bake(ray_color, ray_light, ray_fog);
+  color this_color = color_bake(mat.col, ray_light, ray_fog);
 
   ray reflection;
   ray_reflect(&reflection, r, normal);
@@ -116,7 +117,7 @@ color ray_march(const scene s, const ray r, const int max_reflections) {
 
   color reflection_color = ray_march(s, reflection, max_reflections - 1);
 
-  return color_blend(this_color, reflection_color, reflectivity);
+  return color_blend(this_color, reflection_color, mat.reflectivity);
 }
 
 float triangular_noise() {

@@ -3,20 +3,20 @@
 
 #include <stdio.h>
 
-#include "sphere.h"
-#include "plane.h"
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include "ray.h"
-#include "color.h"
+#include "material.h"
+
 
 typedef struct {
+  lua_State *L;
   point light_source;
-  int n_spheres;
-  sphere *spheres;
-  int n_planes;
-  plane *planes;
 } scene;
 
-void read_scene(scene *s, FILE *f);
+void read_scene(scene *s, const char *filename);
 
 float scene_distance(const scene s, const point p);
 
@@ -24,11 +24,9 @@ int scene_get_intersection(const scene s, const ray incident_ray, point *interse
 
 ray scene_get_normal(const scene s, const point p);
 
-float scene_get_light(const scene s, const ray incident_ray, const ray normal);
+material scene_get_material(const scene s, const point p);
 
-color scene_get_color(const scene s, const point p);
-
-float scene_get_reflectivity(const scene s, const point p);
+float scene_get_light(const scene s, const ray incident_ray, const ray normal, float reflectivity);
 
 void free_scene(scene *s);
 

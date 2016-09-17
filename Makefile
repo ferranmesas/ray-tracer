@@ -7,7 +7,7 @@ OPTFLAGS = -O2 -march=native -ffast-math -fomit-frame-pointer -g
 
 .PHONY: clean
 
-raytracer: $(SRC)/main.o $(SRC)/sphere.o $(SRC)/point.o $(SRC)/ray.o $(SRC)/scene.o $(SRC)/plane.o $(SRC)/color.o $(SRC)/utils.o
+raytracer: $(SRC)/main.o $(SRC)/point.o $(SRC)/ray.o $(SRC)/scene.o $(SRC)/color.o $(SRC)/utils.o $(SRC)/material.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
 $(SRC)/%.o: $(SRC)/%.c $(SRC)/%.h

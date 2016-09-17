@@ -1,5 +1,4 @@
 #include "point.h"
-#include "sphere.h"
 #include "ray.h"
 
 void ray_from_to(ray * r, const point from, const point to) {

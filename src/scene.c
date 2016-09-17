@@ -8,11 +8,11 @@
 
 #include "defines.h"
 #include "scene.h"
-#include "sphere.h"
-#include "plane.h"
 #include "ray.h"
+#include "material.h"
 #include "color.h"
 #include "utils.h"
+
 
 int mymod(float f) {
   return fabsf(fmodf(floor(f), 2));
@@ -23,62 +23,46 @@ void bail(lua_State *L, char *msg){
           msg, lua_tostring(L, -1));
   exit(1);
 }
-static lua_State *L;
+void read_scene(scene *s, const char *filename) {
 
-void read_scene(scene *s, FILE *fp) {
-
-  fscanf(fp, "%f %f %f\n", &(s->light_source.x), &(s->light_source.y), &(s->light_source.z));
-
-  fscanf(fp, "%d\n", &s->n_spheres);
-  s->spheres = (sphere*) malloc(s->n_spheres * sizeof(sphere));
-  for (int i = 0; i < s->n_spheres; i++) {
-    read_sphere(&s->spheres[i], fp);
+  s->L = luaL_newstate();
+  luaL_openlibs(s->L);
+  if(luaL_loadfile(s->L, filename)) {
+    bail(s->L, "Cannot open scene file");
   }
+  if(lua_pcall(s->L, 0, 0, 0)) {
+    bail(s->L, "Error in scene file");
+  }
+  lua_getglobal(s->L, "light_source");
 
-  fscanf(fp, "%d\n", &s->n_planes);
-  s->planes = (plane*) malloc(s->n_planes * sizeof(plane));
-  for (int i = 0; i < s->n_planes; i++) {
-    read_plane(&s->planes[i], fp);
-  }
+  lua_pushstring(s->L, "x");
+  lua_gettable(s->L, -2);
+  s->light_source.x = lua_tonumber(s->L, -1);
+  lua_pop(s->L, 1);
 
-  L = luaL_newstate();
-  luaL_openlibs(L);
-  if(luaL_loadfile(L, "lib.lua")) {
-    bail(L, "Cannot open scene file");
-  }
-  if(lua_pcall(L, 0, 0, 0)) {
-    bail(L, "Error in scene file");
-  }
+  lua_pushstring(s->L, "y");
+  lua_gettable(s->L, -2);
+  s->light_source.y = lua_tonumber(s->L, -1);
+  lua_pop(s->L, 1);
+
+  lua_pushstring(s->L, "z");
+  lua_gettable(s->L, -2);
+  s->light_source.z = lua_tonumber(s->L, -1);
+  lua_pop(s->L, 1);
+
+  lua_pop(s->L, 1);
 }
 
 float scene_distance(const scene s, const point p) {
-  lua_getglobal(L, "scene");
-  lua_pushnumber(L, p.x);
-  lua_pushnumber(L, p.y);
-  lua_pushnumber(L, p.z);
-  if(lua_pcall(L, 3, 1, 0)) {
-    bail(L, "Error running scene");
+  lua_getglobal(s.L, "scene");
+  lua_pushnumber(s.L, p.x);
+  lua_pushnumber(s.L, p.y);
+  lua_pushnumber(s.L, p.z);
+  if(lua_pcall(s.L, 3, 2, 0)) {
+    bail(s.L, "Error running scene");
   }
-  float res = lua_tonumber(L, -1);
-  lua_settop(L, 0);
-  return res;
-
-  float min_dist = INFINITY;
-
-  for (int k = 0; k < s.n_spheres; k++) {
-    float dist = sphere_distance(s.spheres[k], p);
-    if (dist < min_dist) {
-      min_dist = dist;
-    }
-  }
-
-  for (int k = 0; k < s.n_planes; k++) {
-    float dist = plane_distance(s.planes[k], p);
-    if (dist < min_dist) {
-      min_dist = dist;
-    }
-  }
-
+  float min_dist = lua_tonumber(s.L, -2);
+  lua_settop(s.L, 0);
   return min_dist;
 }
 
@@ -133,7 +117,34 @@ ray scene_get_normal(const scene s, const point p) {
   return normal;
 }
 
-float scene_get_light(const scene s, const ray incident_ray, const ray normal) {
+material scene_get_material(const scene s, const point p) {
+/*
+  lua_getglobal(s.L, "scene");
+  lua_pushnumber(s.L, p.x);
+  lua_pushnumber(s.L, p.y);
+  lua_pushnumber(s.L, p.z);
+  if(lua_pcall(s.L, 3, 2, 0)) {
+    bail(s.L, "Error running scene");
+  }
+
+  lua_pushnumber(s.L, p.x);
+  lua_pushnumber(s.L, p.y);
+  lua_pushnumber(s.L, p.z);
+  if(lua_pcall(s.L, 3, 1, 0)) {
+    bail(s.L, "Error running scene");
+  }
+
+*/
+  material result = {
+    COLOR_BLACK,
+    0.8
+  };
+  lua_settop(s.L, 0);
+
+  return result;
+}
+
+float scene_get_light(const scene s, const ray incident_ray, const ray normal, const float reflectivity) {
 
   ray incident_light;
   ray_from_to(&incident_light, s.light_source, normal.source);
@@ -155,47 +166,9 @@ float scene_get_light(const scene s, const ray incident_ray, const ray normal) {
   ray_reflect(&light_reflection, incident_light, normal);
 
   float specular_light = pow(max(0, -dot_product(light_reflection.dir, incident_ray.dir)), 15);
-  return 0.15 + diffuse_light + 1.0f * specular_light;
-}
-
-color scene_get_color(const scene s, const point p) {
-  for (int k = 0; k < s.n_spheres; k++) {
-    float dist = sphere_distance(s.spheres[k], p);
-    if (dist < EPS) {
-      return COLOR_BLACK;
-    }
-  }
-
-  for (int k = 0; k < s.n_planes; k++) {
-    float dist = plane_distance(s.planes[k], p);
-    if (dist < EPS) {
-      if(mymod(p.z) ^ mymod(p.y)) {
-        return (color) {0.9, 0.1, 0.1};
-      } else {
-        return COLOR_WHITE;
-      }
-    }
-  }
-  return COLOR_WHITE;
-}
-
-float scene_get_reflectivity(const scene s, const point p) {
-  for (int k = 0; k < s.n_spheres; k++) {
-    float dist = sphere_distance(s.spheres[k], p);
-    if (dist < EPS) {
-      return 0.7;
-    }
-  }
-
-  for (int k = 0; k < s.n_planes; k++) {
-    float dist = plane_distance(s.planes[k], p);
-    if (dist < EPS) {
-      return 0.0;
-    }
-  }
-  return 0;
+  return 0.15f + diffuse_light + reflectivity * specular_light;
 }
 
 void free_scene(scene *s) {
-  free(s->spheres);
+  lua_close(s->L);
 }

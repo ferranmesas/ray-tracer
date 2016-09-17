@@ -3,7 +3,7 @@
 
 #define N_RAYS 1
 
-#define MAX_REFLECTIONS 4
+#define MAX_REFLECTIONS 10
 
 #define EPS 1.0E-3
 #define MAX_DIST 100.0f
