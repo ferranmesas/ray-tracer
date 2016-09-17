@@ -5,3 +5,5 @@ test.png
 .idea/
 CMakeCache.txt
 CMakeFiles/
+build/*
+!build/.gitignore
