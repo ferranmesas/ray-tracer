@@ -89,6 +89,7 @@ int main(int argc, char* argv[]) {
       putchar(255 * clamp(final_color.b, 0.0f, 1.0f));
     }
   }
+  free_scene(&s);
 }
 
 color ray_march(const scene s, const ray r, const int max_reflections) {
