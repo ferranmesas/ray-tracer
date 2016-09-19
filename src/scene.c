@@ -13,6 +13,34 @@
 #include "color.h"
 #include "utils.h"
 
+static void stackDump (lua_State *L) {
+      int i;
+      int top = lua_gettop(L);
+      fprintf(stderr, "lua stack:\n");
+      for (i = 1; i <= top; i++) {  /* repeat for each level */
+        int t = lua_type(L, i);
+        switch (t) {
+          case LUA_TSTRING:  /* strings */
+            fprintf(stderr, "`%s'\n", lua_tostring(L, i));
+            break;
+
+          case LUA_TBOOLEAN:  /* booleans */
+            fprintf(stderr, lua_toboolean(L, i) ? "true\n" : "false\n");
+            break;
+
+          case LUA_TNUMBER:  /* numbers */
+            fprintf(stderr, "%g\n", lua_tonumber(L, i));
+            break;
+
+          default:  /* other values */
+            fprintf(stderr, "%s\n", lua_typename(L, t));
+            break;
+
+        }
+        printf("  ");  /* put a separator */
+      }
+      printf("\n");  /* end the listing */
+    }
 
 int mymod(float f) {
   return fabsf(fmodf(floor(f), 2));
@@ -118,7 +146,7 @@ ray scene_get_normal(const scene s, const point p) {
 }
 
 material scene_get_material(const scene s, const point p) {
-/*
+
   lua_getglobal(s.L, "scene");
   lua_pushnumber(s.L, p.x);
   lua_pushnumber(s.L, p.y);
@@ -133,12 +161,32 @@ material scene_get_material(const scene s, const point p) {
   if(lua_pcall(s.L, 3, 1, 0)) {
     bail(s.L, "Error running scene");
   }
+  lua_pushstring(s.L, "reflectivity");
 
-*/
-  material result = {
-    COLOR_BLACK,
-    0.8
-  };
+  lua_gettable(s.L, -2);
+
+  material result;
+  result.reflectivity = lua_tonumber(s.L, -1);
+  lua_pop(s.L, 1);
+
+  lua_pushstring(s.L, "color");
+  lua_gettable(s.L, -2);
+
+  lua_pushnumber(s.L, 1);
+  lua_gettable(s.L, -2);
+  result.col.r = lua_tonumber(s.L, -1);
+  lua_pop(s.L, 1);
+
+  lua_pushnumber(s.L, 2);
+  lua_gettable(s.L, -2);
+  result.col.g = lua_tonumber(s.L, -1);
+  lua_pop(s.L, 1);
+
+  lua_pushnumber(s.L, 3);
+  lua_gettable(s.L, -2);
+  result.col.b = lua_tonumber(s.L, -1);
+  lua_pop(s.L, 1);
+
   lua_settop(s.L, 0);
 
   return result;

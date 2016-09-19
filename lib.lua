@@ -3,6 +3,7 @@ local function debug(...)
   io.stderr:write(table.concat({...}, ' ') .. '\n')
 end
 
+local xor = require("bit32").bxor
 local abs = math.abs
 local max = math.max
 local min = math.min
@@ -82,7 +83,10 @@ end
 
 function checkerboard(x, y, z)
   local color
-  if floor(x) ^ floor(y) ^floor(z) then
+  x = floor(x) % 2
+  y = floor(y) % 2
+  z = floor(z) % 2
+  if xor(x, y, z) == 0 then
     color = {0.9, 0.1, 0.1}
   else
     color = {0.9, 0.9, 0.9}
@@ -104,8 +108,8 @@ scene = union {
     translate(0, 2, -1.5) {
     sphere(0.4, mirror)
     },
-    translate(-0.4, 4, -0.5) {
-        cube(0.3, 1, 1.5, mirror)
+    translate(-0.4, 4, 0) {
+        cube(4, 1, 2, mirror)
     },
     translate(0, 2, 1.5) {
         sphere(0.4, checkerboard)

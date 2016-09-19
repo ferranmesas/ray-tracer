@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
 
   scene s;
 
-  read_scene(&s, "lib.lua");
+  read_scene(&s, NULL);
   // Done reading input, start tracing!
 
   // netpbm header
