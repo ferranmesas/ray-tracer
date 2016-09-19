@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
 
 #include "defines.h"
 #include "scene.h"
@@ -52,17 +52,13 @@ void bail(lua_State *L, char *msg){
   exit(1);
 }
 void read_scene(scene *s, const char *filename) {
-
   s->L = luaL_newstate();
   luaL_openlibs(s->L);
-  if(luaL_loadfile(s->L, filename)) {
-    bail(s->L, "Cannot open scene file");
-  }
-  if(lua_pcall(s->L, 0, 0, 0)) {
-    bail(s->L, "Error in scene file");
-  }
-  lua_getglobal(s->L, "light_source");
 
+  luaL_loadfile(s->L, filename);
+  lua_pcall(s->L, 0, 0, 0);
+
+  lua_getglobal(s->L, "light_source");
   lua_pushstring(s->L, "x");
   lua_gettable(s->L, -2);
   s->light_source.x = lua_tonumber(s->L, -1);
@@ -76,9 +72,7 @@ void read_scene(scene *s, const char *filename) {
   lua_pushstring(s->L, "z");
   lua_gettable(s->L, -2);
   s->light_source.z = lua_tonumber(s->L, -1);
-  lua_pop(s->L, 1);
-
-  lua_pop(s->L, 1);
+  lua_pop(s->L, 2);
 }
 
 float scene_distance(const scene s, const point p) {
@@ -86,11 +80,9 @@ float scene_distance(const scene s, const point p) {
   lua_pushnumber(s.L, p.x);
   lua_pushnumber(s.L, p.y);
   lua_pushnumber(s.L, p.z);
-  if(lua_pcall(s.L, 3, 2, 0)) {
-    bail(s.L, "Error running scene");
-  }
+  lua_call(s.L, 3, 2);
   float min_dist = lua_tonumber(s.L, -2);
-  lua_settop(s.L, 0);
+  lua_pop(s.L, 2);
   return min_dist;
 }
 
@@ -151,16 +143,13 @@ material scene_get_material(const scene s, const point p) {
   lua_pushnumber(s.L, p.x);
   lua_pushnumber(s.L, p.y);
   lua_pushnumber(s.L, p.z);
-  if(lua_pcall(s.L, 3, 2, 0)) {
-    bail(s.L, "Error running scene");
-  }
+  lua_call(s.L, 3, 2);
 
   lua_pushnumber(s.L, p.x);
   lua_pushnumber(s.L, p.y);
   lua_pushnumber(s.L, p.z);
-  if(lua_pcall(s.L, 3, 1, 0)) {
-    bail(s.L, "Error running scene");
-  }
+  lua_call(s.L, 3, 1);
+
   lua_pushstring(s.L, "reflectivity");
 
   lua_gettable(s.L, -2);
@@ -187,7 +176,7 @@ material scene_get_material(const scene s, const point p) {
   result.col.b = lua_tonumber(s.L, -1);
   lua_pop(s.L, 1);
 
-  lua_settop(s.L, 0);
+  lua_settop(s.L, 1);
 
   return result;
 }
