@@ -54,10 +54,10 @@ end
 
 function translate(x, y, z)
   return function(object)
+    if type(object) == "table" then
+      object = union(object)
+    end
     return function(xx, yy, zz)
-      if type(object) == "table" then
-        object = union(object)
-      end
       return object(xx - x, yy - y, zz - z)
     end
   end
