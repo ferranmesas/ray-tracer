@@ -37,6 +37,21 @@ function union(objects)
   end
 end
 
+function intersection(objects)
+  return function(xx, yy, zz)
+    local max_dist = -math.huge
+    local max_mat
+    for _, obj in ipairs(objects) do
+      local d, mat = obj(xx, yy, zz)
+      if d > max_dist then
+        max_dist = d
+        max_mat = mat
+      end
+    end
+    return max_dist, max_mat
+  end
+end
+
 function translate(x, y, z)
   return function(object)
     return function(xx, yy, zz)
@@ -94,25 +109,22 @@ function checkerboard(x, y, z)
   end
   return {
     color = color,
-    reflectivity = 0
+    reflectivity = 0.1
   }
 end
 
 light_source = {
-    x = -40,
-    y = 0,
-    z = -40
+    x = -4,
+    y = -1,
+    z = 0.6
 }
 
 scene = union {
-    translate(0, 2, -1.5) {
-    sphere(0.4, mirror)
-    },
-    translate(-0.4, 4, 0) {
-        cube(4, 1, 2, mirror)
-    },
-    translate(0, 2, 1.5) {
-        sphere(0.4, checkerboard)
-    },
-    plane(-1, 0, 0, 1.01, checkerboard),
+  translate(0, 2, 5.5) {
+    cube(4, 4, 4, mirror)
+  },
+  plane(-1, 0, 0, 1.01, checkerboard),
+  translate(0, 3, -1.5) {
+    cube(1, 1, 1, checkerboard)
+  }
 }
