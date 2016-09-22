@@ -1,4 +1,0 @@
-TODO:
-move to HSL or similar color space
-calculate light from illumination, saturation from camera distance & hue from material.
-
