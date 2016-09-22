@@ -1,7 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#define N_RAYS 8
+#define N_RAYS 1
 
 #define MAX_REFLECTIONS 10
 
