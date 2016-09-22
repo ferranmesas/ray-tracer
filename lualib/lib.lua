@@ -1,13 +1,41 @@
+compose = require "lualib.compose"
+
+-- "rng" functions: given an array of numbers, it always returns
+-- the same "random" number.
+local function prng(seed)
+  if seed == nil then
+    seed = os.time()
+  end
+
+  local m = math.pow(2, 32)
+  local a = 1103515245
+  local c = 12345
+  local function _prng(n, ...)
+    local arg = {...}
+    local tmp
+    if #arg == 0 then
+      tmp = seed
+    else
+      tmp = _prng(unpack(arg))
+    end
+    return (c + n * a * tmp) % m
+  end
+  return _prng
+end
+
+prng = prng()
+
 -- helper functions
-local function debug(...)
+function debug(...)
   io.stderr:write(table.concat({...}, ' ') .. '\n')
 end
 
 local xor = require("bit32").bxor
 local abs = math.abs
-local max = math.max
-local min = math.min
 local floor = math.floor
+
+local max, min = math.max, math.min
+local sin, cos = math.sin, math.cos
 
 local function len(x, y, z)
   return math.sqrt(x * x + y * y + z * z)
@@ -21,7 +49,7 @@ local function dot(x, y, z, xx, yy, zz)
   return x * xx + y * yy + z * zz
 end
 
--- transformations of objects
+-- csg functions of objects
 function union(objects)
   return function(xx, yy, zz)
     local min_dist = math.huge
@@ -52,17 +80,38 @@ function intersection(objects)
   end
 end
 
-function translate(x, y, z)
-  return function(object)
-    if type(object) == "table" then
-      object = union(object)
-    end
-    return function(xx, yy, zz)
-      return object(xx - x, yy - y, zz - z)
+-- coordinate transforms
+function transformation(transform_func)
+  return function (...)
+    local func = transform_func(...)
+    return function(object)
+        object = union(object)
+      return function(xx, yy, zz)
+        local d, m = object(func(xx, yy, zz))
+        return d, compose(m, func)
+      end
     end
   end
 end
 
+translate = transformation(
+  function(x, y, z)
+    return function(xx, yy, zz)
+      return xx - x, yy - y, zz - z
+    end
+  end
+)
+
+rotateX = transformation(
+  function(angle)
+    local angle_rad = math.rad(angle)
+    local _sin = sin(angle_rad)
+    local _cos = cos(angle_rad)
+    return function(xx, yy, zz)
+      return xx, yy * _cos - zz * _sin, yy * _sin + zz * _cos
+    end
+  end
+)
 -- shapes
 function sphere(r, mat)
   return function(x, y, z)
@@ -80,8 +129,13 @@ function cube(a, b, c, mat)
 end
 
 function plane(a, b, c, d, mat)
+  local len = len(a, b, c)
+  a = a / len
+  b = b / len
+  c = c / len
+  d = d / len
   return function(xx, yy, zz)
-    return (dot(a, b, c, xx, yy, zz) + d) / len(a, b, c), mat
+    return dot(a, b, c, xx, yy, zz) + d, mat
   end
 end
 
@@ -92,7 +146,7 @@ function mirror(x, y, z)
       g = 0,
       b = 0
     },
-    reflectivity = 0.9
+    reflectivity = 0.8
   }
 end
 
@@ -102,29 +156,14 @@ function checkerboard(x, y, z)
   y = floor(y) % 2
   z = floor(z) % 2
   if xor(x, y, z) == 0 then
-    color = {0.9, 0.1, 0.1}
+    return {
+      color = {0.9, 0.1, 0.1},
+      reflectivity = 0.1
+    }
   else
-    color = {0.9, 0.9, 0.9}
-
+    return {
+      color = {0.9, 0.9, 0.9},
+      reflectivity = 0.2
+    }
   end
-  return {
-    color = color,
-    reflectivity = 0.1
-  }
 end
-
-light_source = {
-    x = -4,
-    y = -1,
-    z = 0.6
-}
-
-scene = union {
-  translate(0, 2, 5.5) {
-    cube(4, 4, 4, mirror)
-  },
-  plane(-1, 0, 0, 1.01, checkerboard),
-  translate(0, 3, -1.5) {
-    cube(1, 1, 1, checkerboard)
-  }
-}
