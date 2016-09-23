@@ -15,6 +15,7 @@ color color_bake(const color hue, const float light, const float fog) {
   if(light > 1.0f) {
     final_color = color_blend(final_color, VERY_WHITE, clamp((light - 1.0f), 0.0f, 1.0f));
   }
+
   final_color = color_blend(final_color, COLOR_SKY, fog);
   return final_color;
 }

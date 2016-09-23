@@ -26,7 +26,7 @@ ray scene_get_normal(const scene s, const point p);
 
 material scene_get_material(const scene s, const point p);
 
-float scene_get_light(const scene s, const ray incident_ray, const ray normal, float reflectivity);
+float scene_get_light(const scene s, const ray incident_ray, ray normal, float reflectivity);
 
 void free_scene(scene *s);
 

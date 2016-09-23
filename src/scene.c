@@ -181,10 +181,11 @@ material scene_get_material(const scene s, const point p) {
   return result;
 }
 
-float scene_get_light(const scene s, const ray incident_ray, const ray normal, const float reflectivity) {
+float scene_get_light(const scene s, const ray incident_ray, ray normal, const float reflectivity) {
 
+  point intersection = normal.source;
   ray incident_light;
-  ray_from_to(&incident_light, s.light_source, normal.source);
+  ray_from_to(&incident_light, s.light_source, intersection);
 
   float diffuse_light = max(0, dot_product(normal.dir, incident_light.dir));
 
@@ -194,16 +195,27 @@ float scene_get_light(const scene s, const ray incident_ray, const ray normal, c
 
   point light_intersection;
   scene_get_intersection(s, incident_light, &light_intersection);
-  int is_shadow = distance(light_intersection, normal.source) > EPS;
+  int is_shadow = distance(light_intersection, intersection) > EPS;
   if (is_shadow) {
     return 0.15;
   }
 
   ray light_reflection;
   ray_reflect(&light_reflection, incident_light, normal);
-
   float specular_light = pow(max(0, -dot_product(light_reflection.dir, incident_ray.dir)), 15);
-  return 0.15f + diffuse_light + reflectivity * specular_light;
+
+  ray_reverse(&normal);
+  float ambient_occlusion = 1;
+  int i = 0;
+  while (i * EPS < AMBIENT_OCCLUSION_DISTANCE) {
+    ray_advance(&normal, EPS);
+    if(fabs(scene_distance(s, normal.source) - i * EPS) > 2 * EPS) {
+      ambient_occlusion = pow(i * EPS / AMBIENT_OCCLUSION_DISTANCE, 0.4f);
+      break;
+    }
+    i++;
+  }
+  return 0.15f + ambient_occlusion * (diffuse_light + reflectivity * specular_light);
 }
 
 void free_scene(scene *s) {
